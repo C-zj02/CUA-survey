@@ -1,0 +1,126 @@
+\section{Architecture}
+
+\subsection{CUA Abstraction: A Closed-Loop Perception--Brain--Action System}
+
+Modern Computer-Use Agents (CUAs) have evolved from early rule-based
+heuristics into autonomous systems driven by multimodal large language models
+(MLLMs). Synthesizing recent core studies, the foundational CUA framework can
+be abstracted as a three-layer \emph{Perception--Brain--Action} (PBA)
+architecture \cite{wang2024llm_agents_survey}. This architecture operates
+across both GUI-centric and API-centric interaction pathways, while increasingly
+coupling security mechanisms into the execution loop. The unified framework is
+illustrated in Fig.~\ref{fig:cua_architecture}.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{images/picture3.1.png}
+    \caption{Three-stage CUA architecture under a closed-loop
+    Perception--Brain--Action design. Stage 1 performs perception and
+    sanitization, Stage 2 handles planning and reflection, and Stage 3 executes
+    validated actions under sandboxed isolation.}
+    \label{fig:cua_architecture}
+\end{figure*}
+
+\subsubsection{Perception: Alignment and State Representation in Heterogeneous Environments}
+
+The perception layer transforms high-dimensional and noisy digital inputs (e.g.,
+pixel streams, HTML sources, API responses) into structured state
+representations consumable by foundation models. Technically, this layer has
+shifted from metadata-dependent parsing to vision-native grounding.
+
+\textbf{Structured text and DOM-based perception.}
+Early web agents relied heavily on underlying interface metadata. WebArena and
+Mind2Web used reduced DOM trees or accessibility trees as primary inputs
+\cite{zhou2024webarena,deng2024mind2web}. While efficient in instrumented web
+settings, such approaches are brittle in closed-source software and dynamic
+rendering scenarios. In machine-centric interaction settings, Gorilla further
+examined structured API-document and JSON-schema grounding for tool-use
+decisions \cite{patil2023gorilla}.
+
+\textbf{Pure visual grounding and multimodal localization.}
+To remove dependence on privileged interface metadata, recent work moved toward
+direct screenshot understanding. CogAgent and ScreenAI demonstrated that
+high-resolution vision-language modeling can capture complex UI layout and
+semantics \cite{hong2024cogagent,baechler2024screenai}. SeeClick and Ferret-UI
+then introduced coordinate-grounded objectives, significantly improving
+fine-grained element localization on desktop and mobile environments
+\cite{cheng2024seeclick,you2024ferretui}. More recently, OmniParser proposed a
+pure-vision parsing paradigm that tokenizes UI screenshots and extracts icon
+semantics and text bounding boxes without external OCR dependency
+\cite{lu2024omniparser}.
+
+\textbf{Security-aware perception and environment sanitization.}
+As CUAs are exposed to adversarial environments, perception-layer fragility has
+become explicit. AgentXploit showed that hidden or context-poisoned interface
+content can trigger indirect prompt injection and manipulate downstream agent
+behavior \cite{liu2024agentxploit}. To mitigate this risk, Chen et al.
+introduced visual pre-filtering and sanitization pipelines for VLM-based CUAs,
+isolating untrusted external signals before they enter planning
+\cite{chen2024defending_ipi_vlm}.
+
+\subsubsection{Brain: Long-Horizon Planning, Memory, and Reflection}
+
+The brain layer serves as the system's executive control module: it handles
+goal decomposition, intent grounding, and dynamic routing across heterogeneous
+action channels. Its central challenge is maintaining coherent reasoning under
+long-horizon execution, where catastrophic forgetting and objective drift are
+common.
+
+\textbf{Temporal planning and dynamic routing.}
+Building on the ReAct paradigm of interleaving reasoning and acting
+\cite{yao2023react}, recent CUA systems adopt more explicit planning topology.
+OSCopilot presented a general operating-system agent framework that decomposes
+system-level objectives into executable subtasks \cite{wu2024oscopilot}. In
+hybrid tool/UI settings, the brain must also perform cost-aware routing:
+prefer direct API/tool invocations when available (Toolformer-style), and
+degrade gracefully to GUI interaction when no reliable interface exists
+\cite{schick2023toolformer}.
+
+\textbf{Episodic memory and exploration.}
+When operating in unfamiliar software environments, CUAs benefit from active
+exploration and memory accumulation. AppAgent introduced autonomous trial-and-
+error interaction to build episodic action--state memory for downstream reuse
+\cite{zhan2024appagent}. AgentBoard evaluations further indicate that external
+memory mechanisms (e.g., retrieval over trajectory traces) can improve success
+rates in long-context, multi-turn tasks \cite{ma2024agentboard}.
+
+\textbf{Closed-loop reflection and alignment guardrails.}
+Real-world execution includes latency, UI non-determinism, and system errors.
+Reflexion introduced verbal reinforcement and self-correction loops that allow
+agents to backtrack and revise plans after failed actions \cite{shinn2023reflexion}.
+To reduce long-horizon goal hijacking risk, recent secure-agent designs also
+emphasize guardrails-by-construction, where side-channel monitors continuously
+check whether decision trajectories remain aligned with user intent
+\cite{liu2024agentxploit}.
+
+\subsubsection{Action: Unified Action Space and Polyglot Sandbox Isolation}
+
+The action layer compiles planned intent into concrete operational effects. Its
+core design tension is balancing cross-platform generalization against
+potentially destructive execution risk.
+
+\textbf{End-to-end native GUI control.}
+Traditional CUA stacks often depended on manually engineered controllers for
+coordinate mapping and event translation. UI-TARS and follow-up systems
+promoted an end-to-end paradigm that directly outputs absolute/relative
+coordinates and keyboard/mouse events, reporting strong benchmark performance
+\cite{qin2025uitars}. OS-ATLAS further showed that large-scale cross-platform
+pretraining (Windows/macOS/Linux) can learn a more unified and generalizable
+action space \cite{boyce2025osatlas}.
+
+\textbf{Code-as-Action and Agent-Computer Interface (ACI).}
+For backend-heavy or computation-intensive tasks, pure GUI clicking is often
+inefficient. SWE-agent proposed an agent-computer interface (ACI) that allows
+models to generate and execute Bash/Python code in terminal environments,
+expanding CUA capability in software engineering workflows
+\cite{yang2024sweagent}.
+
+\textbf{Isolated execution and human-in-the-loop (HITL).}
+Because action-layer outputs can directly mutate file systems, credentials, and
+network states, environment-level isolation is critical. OSWorld and related
+evaluation settings highlight the necessity of realistic yet controlled
+execution environments \cite{xie2024osworld}. In production-grade deployments,
+generated code should run in stateless containers or virtual machines; in
+addition, sensitive operations (e.g., privilege escalation) should trigger
+human-in-the-loop confirmation to provide strong validation for irreversible
+actions.
