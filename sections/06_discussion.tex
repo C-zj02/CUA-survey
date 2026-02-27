@@ -12,8 +12,8 @@ For CUA developers, security must be addressed at design time. A core principle 
 \subsubsection{Deployment and Integration Teams (Deployment stage)}
 For deployment and integration teams, system-level boundaries are paramount. A guiding principle is to \emph{treat the environment as potentially adversarial} and enforce strong isolation: over-privilege and weak isolation enable operation-stage attacks; least-privilege access, sandboxing~\cite{ceLLMate2025,CaMeLs2026}, and provenance-aware interfaces must be enforced before agents enter production. The MCP Security Bench~\cite{MCPSecurityBench2025} and Agent Security Bench~\cite{AgentSecurityBench2025} show that stronger models are often more exploitable; deployment gating and pre-release red teaming~\cite{RedTeamCUA2025} are essential.
 
-\subsubsection{Operators (Operation stage)}
-For operators, the 2$\times$2 attribution matters: curiosity-driven overreach requires task-boundary and data-minimization controls; malice-driven threats (IPI, memory poisoning) require intent verification and input sanitization. A practical principle is to \emph{close the loop with continuous monitoring and human confirmation for high-impact actions}. Runtime monitoring, misalignment detection~\cite{DeAction2026}, and human-in-the-loop confirmation remain critical. Operators must treat tool outputs as potentially adversarial and enforce constraints on cross-tool composition~\cite{BrowseSafe2025}.
+\subsubsection{Operators (Execution stage)}
+For operators, the 2$\times$2 attribution matters: curiosity-driven overreach requires task-boundary and data-minimization controls; malice-driven threats (IPI, memory poisoning) require intent verification and input sanitization. A practical principle is to \emph{close the loop with continuous monitoring and human confirmation for high-impact actions}. Runtime monitoring, misalignment detection~\cite{DeAction2026}, and human-in-the-loop confirmation remain critical. Operators must treat tool outputs as potentially adversarial and enforce constraints on cross-tool composition~\cite{BrowseSafe2025}.*** End Patch```"/>
 
 \subsubsection{Maintainers and Ecosystem Stewards (Maintenance stage)}
 For maintainers and ecosystem stewards, agent-to-agent propagation introduces governance gaps. A key principle is to \emph{govern agent societies as first-class security subjects}, not just as implementation details. Platforms such as OpenClaw--Moltbook~\cite{Chen2026Moltbook} demonstrate that skills propagate at machine scale with minimal vetting. Identity and access management for non-human entities, content governance for agent social platforms, and defenses against Prompt Infection~\cite{PromptInfection2024} are emerging priorities. Centralized or federated registries with verified identities, version pinning, and audit trails help mitigate supply-chain risks.
@@ -24,7 +24,7 @@ For researchers, a key finding is that \textbf{safety alignment in dialogue does
 \subsection{Recommendations and Defense Frameworks}
 \label{subsec:recommendations}
 
-Defense research is shifting from input filtering to lifecycle-spanning, multi-layer protection. We summarize representative frameworks by lifecycle phase and attribution target.
+Defense research is shifting from input filtering to lifecycle-spanning, multi-layer protection. We summarize representative frameworks by lifecycle stage and attribution target.
 
 \subsubsection{Creation stage}
 \emph{Formal verification} (VeriGuard~\cite{VeriGuard2025}) applies provably sound verification to code-agent outputs, achieving 0\% ASR on evaluated benchmarks. \emph{Safe interfaces and abstractions} reduce low-level action entropy; constrained primitives force high-impact actions into auditable operations. \emph{Benchmarks} (OS-Harm, CUAHarm, LPS-BENCH) convert safety from qualitative claims into quantitative signals for release gating.
@@ -32,7 +32,7 @@ Defense research is shifting from input filtering to lifecycle-spanning, multi-l
 \subsubsection{Deployment stage}
 \emph{Intent-aware access control} (CSAgent~\cite{CSAgent2025}) binds actions to task intent via contextual integrity, defending against 99.36\% of attacks with ~2\% latency overhead. \emph{Sandboxing} (ceLLMate~\cite{ceLLMate2025}, CaMeLs~\cite{CaMeLs2026}) constrains the blast radius of prompt injection via isolation and blind planning. \emph{Pre-release red teaming} (RedTeamCUA~\cite{RedTeamCUA2025}) stress-tests agents before production.
 
-\subsubsection{Operation stage}
+\subsubsection{Execution stage}
 \emph{Intent provenance and misalignment detection} (IntentGuard~\cite{IntentGuard2025}, DeAction~\cite{DeAction2026}) trace action intent to its source and detect off-task or misaligned actions, cutting attack success by over 90\% without harming benign performance. \emph{Reasoning-layer guardrails} (MirrorGuard~\cite{MirrorGuard2026}) correct unsafe reasoning in simulation before GUI execution, reducing unsafe rates from 66.5\% to 13\%. \emph{Privacy protection} (PrivacyChecker~\cite{PrivacyChecker2025}) filters agent-to-agent communication using context integrity, reducing PII leakage from 36\% to 7--8\%; data minimization should be evaluated behaviorally~\cite{AgentDAM2025}. \emph{Advanced guardrails} (ShieldAgent~\cite{ShieldAgent2025}, AgentDoG~\cite{AgentDoG2025}) provide real-time monitoring and diagnostic classification of risk sources.
 
 \subsubsection{Maintenance stage}

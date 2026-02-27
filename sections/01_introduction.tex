@@ -1,4 +1,63 @@
 \section{Introduction}
-\label{sec:introduction}
+\label{sec:intro}
+The rapid progress of multimodal large language models (MLLMs) has moved agentic systems beyond text-only tool use toward \emph{direct interaction with graphical user interfaces (GUIs)}. In this paradigm, \textbf{Computer-Use Agents (CUAs)} perceive screens, reason over user goals, and execute mouse/keyboard/touch or programmatic actions. This action capability raises the stakes: failures are no longer only wrong text outputs, but can trigger irreversible outcomes such as payments, deletions, or system reconfiguration. Recent work shows this shift from controlled web benchmarks (Mind2Web, WebArena) to open, real-computer settings (OSWorld), where agents handle unfamiliar applications and long-horizon cross-app procedures~\cite{deng2023mind2web,zhou2024webarena,xie2024osworld}.
 
-\emph{[Placeholder: Introduction to be completed.]}
+\begin{table*}[t]
+\centering
+\caption{Comparison with representative surveys and safety benchmarks for computer-use / GUI agents. Symbols: \checkmark\ = dedicated section-level coverage; $\sim$ = partial mention; -- = not covered.}
+\label{tab:survey_comparison}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llccccp{5.8cm}}
+\toprule
+\textbf{Work} & \textbf{Scope} &
+\textbf{Arch.} & \textbf{Lifecycle} & \textbf{Safety} & \textbf{Govern.} &
+\textbf{Diff. (keywords)} \\
+\midrule
+Nguyen et al.~\cite{nguyen2024guiagentsurvey} & GUI agents survey &
+\checkmark & $\sim$ & $\sim$ & -- &
+scope focus: systems and benchmarks \\
+Hu et al.~\cite{hu2025computerphoneossurvey} & Computer/Phone/OS agents survey &
+\checkmark & $\sim$ & -- & $\sim$ &
+scope focus: app ecosystems \\
+Wang et al.~\cite{wang2025guisurvey} & GUI agents survey (resources) &
+$\sim$ & -- & -- & -- &
+scope focus: resource curation \\
+\midrule
+OS-Harm~\cite{OSHarm2025} & OS/Computer-use safety benchmark &
+-- & -- & \checkmark & -- &
+scope focus: benchmark evaluation \\
+SafeArena~\cite{SafeArena2025} & Web-agent misuse benchmark &
+-- & -- & \checkmark & -- &
+scope focus: misuse evaluation \\
+WAInjectBench~\cite{liu2025wainjectbench} & Prompt-injection benchmark &
+-- & -- & \checkmark & -- &
+scope focus: injection evaluation \\
+\midrule
+Raza et al.~\cite{raza2026agenticsecurity} & Agentic AI security survey (broad) &
+-- & -- & \checkmark & \checkmark &
+scope focus: broad agent security \\
+Aegis Protocol~\cite{AegisProtocol2025} & Open agent security framework &
+-- & -- & \checkmark & \checkmark &
+scope focus: security protocols \\
+\midrule
+\textbf{Ours} & CUA ecosystem (GUI/OS/Web) &
+\checkmark & \checkmark & \checkmark & \checkmark &
+\textbf{scope focus: integrated architecture/lifecycle/governance} \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+Despite fast capability gains, the CUA ecosystem faces two structural bottlenecks that motivate this survey.
+\textbf{First, architectural heterogeneity} makes it difficult to compare approaches: some agents rely on DOM/accessibility trees for state~\cite{deng2023mind2web,zhou2024webarena}, others operate purely from pixels~\cite{omniparser,hong2024cogagent}, and still others hybridize structural priors with vision~\cite{baechler2024screenai}. Likewise, decision modules vary from single-pass action prediction to memory-augmented, reflective, and multi-agent planners~\cite{xie2024osworld,zhang2024ufo}. These choices create non-obvious trade-offs in robustness, portability, latency, and error recovery. To address this, we organize the field with a \textbf{tri-layer architectural taxonomy}---\emph{Perception, Decision, and Execution}---capturing the end-to-end dataflow from pixels to instantiated actions.
+
+\textbf{Second, CUAs introduce qualitatively new safety and governance risks} compared with dialogue-only LLMs: because agents can \emph{act} (e.g., clicking ``confirm purchase,'' changing system settings, running commands), errors are potentially irreversible, and recent safety benchmarks show that harmful behaviors (misuse, prompt injection, unsafe action selection) remain open problems for GUI-capable systems~\cite{OSHarm2025,SafeArena2025,liu2025wainjectbench}.
+
+In this paper, we present a \textbf{lifecycle-oriented synthesis} that connects architecture to real deployment constraints and to security/governance requirements. Specifically, we make three contributions:
+\begin{itemize}
+  \item \textbf{Architecture taxonomy.} We decompose CUAs into Perception, Decision, and Execution layers, enabling modular comparison across state representations, planning mechanisms, and action spaces, and making model-level trade-offs explicit.
+  \item \textbf{Lifecycle taxonomy.} We organize engineering and research challenges into a four-stage lifecycle---\emph{Creation, Deployment, Execution, and Maintenance}---so capabilities and risks can be mapped to where they originate and how failures propagate over time.
+  \item \textbf{Security \& governance lens.} We ground risk analysis in threat modeling and an attribution framework distinguishing \emph{curiosity}-driven deviations from \emph{malice} induced by adversarial content, separating model-internal factors from environment/UI deception cases to guide defense and governance mechanism selection~\cite{raza2026agenticsecurity,SafeArena2025}.
+\end{itemize}
+
+Taken together, our goal is not only to summarize representative systems and benchmarks, but to provide an integrative map that links (i) \emph{how} CUAs are built, (ii) \emph{where} they fail in practice, and (iii) \emph{what} governance mechanisms are necessary as agents operate at scale in open ecosystems.

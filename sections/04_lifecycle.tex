@@ -1,122 +1,60 @@
-\section{Lifecycle}
+\section{A Comprehensive Lifecycle Taxonomy and Architectural Analysis of Computer-Use Agents}
+\label{sec:taxonomy}
 \label{sec:lifecycle}
 
-\subsection{Background and Problem Statement}
-Computer-Use Agents (CUA) perceive and operate graphical user interfaces (GUIs) on desktops, web pages, or mobile devices via actions such as clicking, typing, dragging, and tool invocation, in order to accomplish long-horizon tasks. Compared with conventional scripted automation, CUAs are driven by foundation models and therefore generalize better across interfaces and tasks. However, they also introduce distinct security and safety risks: (i) the interaction target is an open, dynamic, and potentially adversarial software environment; (ii) the action space includes high-impact operations (e.g., sending messages, payments, deletions, installations, executing commands); and (iii) the input chain can be influenced by external content (e.g., indirect prompt injection through webpages or documents).
-
-Existing studies have surveyed the broader CUA landscape and challenges~[5], and have further summarized safety and security threats with structured taxonomies~[3]. In addition, systematizations of CUA vulnerabilities suggest that many risks stem from missing \emph{system-level mechanisms} (e.g., weak provenance, fragile interaction binding, unclear privilege boundaries) rather than purely model-level misalignment~[4]. Motivated by a security-engineering view akin to ``create--deploy--operate--maintain,'' we organize the CUA lifecycle into four phases and summarize key activities, representative technical directions, and evaluation practices for each phase.
-
-\subsection{Lifecycle Phases and Overview}
-We divide the CUA lifecycle into four phases:
-(1) \textbf{Creation/Development}: methods and prototypes are designed and trained, emphasizing capability modeling, safety baselines, and evaluability;
-(2) \textbf{Deployment}: prototypes are integrated into real environments, emphasizing privilege boundaries, isolation, auditability, and controllable system interfaces;
-(3) \textbf{Operation}: online execution, emphasizing runtime monitoring, detection, correction, and human confirmation loops;
-(4) \textbf{Maintenance}: long-term operation and iteration, emphasizing continuous evaluation, vulnerability response, data/policy updates, and governance.
-
-Fig.~\ref{fig:cua_lifecycle} provides a visual overview of the four-stage
-lifecycle pipeline, while Table~\ref{tab:lifecycle_overview} summarizes key
-security-engineering activities and representative research threads.
+We organize representative CUA studies into a four-stage lifecycle taxonomy: \textit{Creation}, \textit{Deployment}, \textit{Execution}, and \textit{Maintenance}. This structure links engineering choices to where capability bottlenecks and security failures originate, and supports stage-wise analysis of architecture, integration, runtime, and update trade-offs.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{images/picture4.1.png}
-\caption{Four-stage CUA lifecycle with representative activities across
-creation/development, deployment, operation, and maintenance.}
-\label{fig:cua_lifecycle}
+\includegraphics[width=\textwidth]{images/p4.1.png}
+\caption{Four-stage lifecycle taxonomy for CUAs: Creation, Deployment, Execution, and Maintenance. Each stage introduces distinct bottlenecks and safety requirements, motivating stage-specific methods and evaluation criteria.}
+\label{fig:lifecycle_taxonomy}
 \end{figure*}
 
-\begin{table*}[t]
-\centering
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{C{2.4cm} Y Y}
-\hline
-\textbf{Phase} & \textbf{Key Activities (Security Engineering)} & \textbf{Representative Threads (Example Refs.)} \\
-\hline
-Creation/Development
-& Threat modeling and taxonomy; safe training/alignment; benchmark and metric design; action/interface abstraction; sim-to-real validation
-& Surveys and taxonomies~[3]; safety benchmarks~[32,38,30]; safe training/alignment~[22,17,21]; interface abstractions~[2,51]; sim-to-real correction~[29] \\
-Deployment
-& Least-privilege access control; sandbox/isolation; provenance and interaction binding; pre-release red teaming
-& System-level vulnerability analysis~[4]; system-level defense~[14]; access-control frameworks~[49]; adversarial testing/red teaming~[43] \\
-Operation
-& Runtime monitoring and auditing; risk detection/blocking; off-task or misaligned action correction; human-in-the-loop confirmation
-& Real-time defense pipelines~[9]; predictive guardrails~[44]; misalignment detection/correction~[60]; completion verification feedback~[1] \\
-Maintenance
-& Continuous evaluation and regression; vulnerability management and incident response; data/policy evolution; enterprise governance
-& Vulnerability exploitation evaluation~[25]; scalable synthetic experience for evolution~[21]; enterprise readiness~[55] \\
-\hline
-\end{tabularx}
-\caption{Lifecycle phases of CUAs from a security-engineering perspective: key activities and representative research threads (example references correspond to your paper list indices).}
-\label{tab:lifecycle_overview}
-\end{table*}
+Fig.~\ref{fig:lifecycle_taxonomy} summarizes the stage-wise progression from foundation model construction to long-term maintenance, clarifying where capability gains and security risks originate and how they propagate across stages~\cite{Jones2025CUA}.
 
-\subsection{Creation/Development}
-\label{sec:creation}
-The goal of the creation phase is to ``design in'' safety early, making safety an object that is \emph{specifiable, learnable, measurable, and integrable} rather than something patched post-deployment. We highlight four key activities.
 
-\subsubsection{Threat Modeling and Risk Taxonomy}
-CUA risk does not only arise from model outputs; it emerges from the closed loop of \emph{perceive--reason--act}. The perception layer can be manipulated via UI spoofing and deceptive affordances; the reasoning layer can be hijacked by prompt injection, goal redirection, or distribution shift; and the action layer can execute over-privileged or high-impact operations with irreversible side effects. Prior work provides structured taxonomies of safety and security threats for computer-using agents, distinguishing internal failure modes from external attacks and summarizing defense directions~[3]. A systematization of vulnerabilities further emphasizes CUA-specific system risks such as missing provenance (enabling indirect prompt injection), weak interaction binding (enabling clickjacking), and unclear privilege boundaries~[4]. Together, these efforts provide the ``design inputs'' for creation-stage security: threat identification, attack-surface analysis, and safety requirement extraction.
 
-\subsubsection{Safety Benchmarks and Metrics}
-Without shared evaluation, safety improvements cannot be reproduced or compared. Recent benchmarks refine evaluation along multiple dimensions:
-(i) \textbf{long-horizon safety awareness}, where LPS-BENCH measures whether agents consistently obey safety constraints across extended plans and multi-step trajectories~[32];
-(ii) \textbf{harmfulness measurement}, which quantifies misuse potential and highlights that agents may exhibit ``blind'' goal pursuit that ignores harmful side effects~[30,27];
-and (iii) \textbf{system-oriented safety benchmarks} such as OS-HARM, which evaluates safety failures in realistic settings and provides a common testbed for guardrails and alignment methods~[38].
-These benchmarks convert safety from qualitative claims into quantitative signals, enabling fair comparison among training strategies, guardrail mechanisms, and system designs.
+\subsection{Creation Stage: Grounding Semantics in Multimodal Infrastructure}
+The Creation stage fundamentally addresses the "semantic-to-spatial" alignment problem: training foundation models to inherently understand Graphical User Interfaces (GUIs). This stage marks a shift from heuristic OCR pipelines to native Multimodal Large Language Models (MLLMs) and scalable sandboxes.
 
-\subsubsection{Training and Alignment for Safe Control}
-Creation-stage alignment must balance task success with safety-constraint satisfaction. A line of work studies policy optimization for GUI agents, including shifting from offline to on-policy training to improve generalization and behavioral stability~[22]. Other efforts use evolutionary/self-improving training paradigms that adapt policies through task interaction~[17]. Scalable synthetic experience is another route: EvoCUA emphasizes learning from synthetic trajectories to evolve CUAs across broader task distributions~[21]. In practice, these techniques provide the methodological basis for learning safety-aware behavior, but they also raise a key question: which safety guarantees should be enforced by learning alone, and which require system-level mechanisms at deployment and runtime (see Table~\ref{tab:lifecycle_overview} and the next subsections).
+\paragraph{Multimodal Foundation Architectures}
+Early web-agent pipelines reported context-window pressure when processing long DOM trees, motivating filtering and compression strategies~\cite{deng2023mind2web}. Recent architectures shift towards native pixel-level processing. CogAgent \cite{hong2024cogagent} addresses miniature UI feature extraction via a high-resolution cross-attention module. Fuyu-8B \cite{bavishi2023fuyu} pioneers a highly efficient decoder-only architecture, linearly projecting image patches directly into the LLM's embedding space to bypass traditional image encoders. To embed deep layout comprehension, Pix2Struct \cite{hwang2023pix2struct} introduces a screenshot parsing pre-training objective, while ScreenAI \cite{baechler2024screenai} maps pixels to structured UI layouts. Furthermore, SeeClick \cite{cheng2024seeclick} focuses exclusively on spatial regression, pre-training models to accurately output $(x,y)$ coordinates through pure visual point-and-click data. Across these designs, a common trade-off appears: structure-heavy pipelines improve deterministic grounding, while pixel-native models improve portability but depend more on robust visual localization.
 
-\subsubsection{Safe Interfaces and Action Abstractions}
-Many CUA risks stem from low-level, high-entropy action spaces. A promising engineering direction is to reduce and constrain actions via interface/primitive design, separating \emph{policy} (semantic planning) from \emph{mechanism} (controlled execution). Declarative, LLM-friendly interfaces advocate controlled primitives and structured interaction, reducing instability and attackability associated with pixel-level control~[2]. Related interface thinking appears in agent-computer interface work for software engineering, where careful abstractions improve reliability and controllability~[51]. From a security perspective, constrained primitives can force high-impact actions into auditable, authorizable operations, providing a natural ``hook'' for deployment-phase access control.
+\paragraph{Data Synthesis and Environmental Sandboxes}
+Interaction data dictates the upper bound of CUA capabilities. To tackle web data noise, Mind2Web \cite{deng2023mind2web} implements a DOM-filtering pipeline distilling bloated HTML into actionable elements, while AITW \cite{rawles2023android} scales mobile data by curating millions of real-world Android screen-action pairs. To optimize the mixture of generic LLM data and agent-specific trajectories, AgentTuning \cite{zeng2024agenttuning} proposes an instruction-tuning methodology that prevents catastrophic forgetting of foundational reasoning. Because static datasets fail to capture dynamic UI state changes, researchers have built self-hosted sandboxes. WebArena \cite{zhou2024webarena} provides isolated, highly realistic web environments (e.g., e-commerce, CMS). Taking this to the system level, OSWorld \cite{xie2024osworld} architects a full-stack Ubuntu sandbox, migrating training from static sequence prediction to interactive environmental grounding.
+These efforts reveal another recurring trade-off: large static corpora improve data breadth, while interactive sandboxes improve fidelity to non-stationary runtime behavior at higher engineering cost.
 
-\subsection{Deployment}
+\subsection{Deployment Stage: Cross-Platform Abstraction and Action Mapping}
 \label{sec:deployment}
-Deployment translates creation-stage methods into real-world systems by enforcing \emph{system boundaries}: privilege, isolation, provenance, pre-release gating, and red teaming. Compared with creation (algorithm/model-centric), deployment is system-security and governance-centric.
+Deployment investigates the architectural mechanisms to mount a CUA onto arbitrary operating systems, balancing \textit{intrusive API-dependent frameworks} against \textit{pure-vision architectures}.
 
-\subsubsection{System-Level Risks and Missing Mechanisms}
-Systematization studies indicate that many real-world CUA risks originate from missing system mechanisms rather than solely from model misalignment: lack of provenance prevents agents from distinguishing user intent from externally injected instructions; weak interaction binding enables UI spoofing and click hijacking; and unclear privilege boundaries allow overreach and unguarded high-impact actions~[4]. Hence, deployment should prioritize these system capabilities instead of relying only on prompt rules.
 
-\subsubsection{Least Privilege and Access Control}
-In production, CUAs often access files, browsers, enterprise apps, or third-party services, requiring configurable authorization policies. Work on access control frameworks for CUAs emphasizes achieving security while maintaining efficiency and usability~[49]. From a security-engineering standpoint, such mechanisms should support:
-(1) \emph{action-level permissions} (what operations are allowed),
-(2) \emph{object-level permissions} (which accounts/files/domains/apps are accessible),
-(3) \emph{contextual conditions} (task, risk level, and whether human approval is required),
-and (4) \emph{auditability} (policy hits and execution traces are traceable).
 
-\subsubsection{System-Level Defense and Pre-release Red Teaming}
-Beyond static authorization, deployment must consider system-level defenses against adversarial environments. CAMELS frames system-level security risks and defenses in the full interaction pipeline~[14]. Realistic adversarial testing such as RedTeamCUA provides a red-teaming process and adversarial cases to stress-test agents before release~[43]. In practice, deployment-stage red teaming should be operationalized into: (i) pre-release blocking rules/policies, (ii) regression test suites for maintenance, and (iii) runtime monitoring and alert rules for operation.
+\paragraph{System-Agnostic Migration Frameworks}
+Modern deployment advocates for universal applicability over platform-specific backdoors (e.g., Selenium). The Cradle framework \cite{wei2024cradle} abstracts all interactions into a universal interface—screen pixels as input, generic mouse/keyboard events as output—enabling zero-shot deployment in complex environments like 3D gaming. Similarly, Mobile-Agent \cite{wang2024mobile} and AppAgent \cite{zhang2024appagent} achieve accessibility-tree-free deployment on smartphones via OCR and ADB simulation, introducing an "exploration stage" to map unfamiliar apps. At the desktop level, OS-Copilot \cite{wu2024oscopilot} integrates bash execution, Python interpreters, and GUI interactions for Linux/macOS, while ScreenAgent \cite{niu2024screenagent} utilizes VNC protocols to continuously stream and control remote desktop pixel arrays. To manage concurrency, AIOS \cite{mei2024aios} conceptualizes an LLM agent operating system kernel, handling resource allocation and context isolation across multiple deployed agents.
 
-\subsection{Operation}
-\label{sec:operation}
-Operation aims to turn safety into a \emph{closed-loop control system}: monitor $\rightarrow$ detect $\rightarrow$ correct/block $\rightarrow$ rollback/confirm. Because real environments are open and potentially adversarial, runtime defenses often determine the practical safety floor.
+\paragraph{Action Space Abstraction and Middleware}
+Translating high-dimensional LLM intent into precise coordinate clicks is error-prone. WebVoyager \cite{he2024webvoyager} elegantly circumvents this spatial regression weakness via a Set-of-Mark (SoM) visual prompting strategy, overlaying numeric bounding boxes directly on screenshots. OmniACT \cite{kapoor2024omniact} deploys an intermediate compilation layer that translates semantic goals into executable PyAutoGUI scripts. Microsoft's UFO \cite{zhang2024ufo} utilizes a dual-agent architecture (application-selector and action-executor) to seamlessly navigate Windows OS, while Ferret-UI \cite{you2025ferretui} provides an any-resolution adaptive deployment mechanism, ensuring visual grounding remains robust regardless of the specific device's aspect ratio.
 
-\subsubsection{Runtime Defense and Real-time Blocking}
-AgentSentinel proposes an end-to-end, real-time security defense framework that continuously detects and intercepts risks during execution~[9]. Compared with input-only filtering, runtime frameworks focus on the \emph{action trajectory}: they trigger checks before critical steps (e.g., sending, paying, deleting), log auditable evidence after actions, and apply rollback/termination when anomalies are detected. This naturally aligns with ``defense-in-depth'' principles.
+\subsection{Execution Stage: Long-Horizon Reasoning and Fault Tolerance}
+\label{sec:execution}
+During online execution, CUAs face the "cascading failure" problem. Execution architectures heavily index on dynamic planning and state tracking to prevent localized errors from invalidating entire task trajectories.
 
-\subsubsection{Predictive Guardrails and Reasoning Correction}
-Predictive guardrails attempt to anticipate risky trajectories before damage occurs. SAFEPRED introduces a predictive guardrail perspective to reduce the cost of post-hoc recovery~[44]. MirrorGuard focuses on simulation-to-real reasoning correction, adjusting agent reasoning when unsafe or erroneous decisions arise~[29]. Together, these works highlight an operational core challenge: \emph{how to detect high-risk trajectories early and correct them without substantially reducing task success or efficiency}.
+\paragraph{Hierarchical Planning and Search}
+The ReAct paradigm \cite{yao2023react} successfully interleaves reasoning and acting, establishing step-by-step interpretability. To overcome ReAct's Markovian execution bias in complex tasks, Tree of Thoughts (ToT) \cite{yao2023tree} introduces tree-search architectures (BFS/DFS), allowing agents to backtrack from dead-end UI states. LUMOS \cite{yin2024lumos} decouples macro-planning from micro-execution, preventing low-level visual noise from polluting the reasoning context. AutoUI \cite{zhan2024autoui} utilizes action-sequence prediction to anticipate multi-step workflows, PolySkill \cite{yu2025polyskill} introduces polymorphic abstractions to decouple intent from specific UI implementations, and LlamaTouch \cite{e2024llamatouch} optimizes on-device inference to reduce execution latency on mobile interfaces.
 
-\subsubsection{Off-task/Misaligned Action Detection and Human-in-the-loop (HITL)}
-Operational failures often appear as ``apparently successful but actually off-task'' behaviors, or ``goal achievement at the expense of safety.'' Work on detecting and correcting misaligned/off-task actions provides mechanisms to pull agents back when they drift or violate constraints~[60]. Another complementary direction is completion verification and feedback: vision-based judges can assess whether tasks are truly completed and provide corrective feedback to reduce repeated or erroneous actions~[1]. In high-impact actions, HITL confirmation remains essential in practice: systems must be able to escalate risks into confirmable events and present interpretable evidence (logs, screenshots, intent summaries) for user approval.
+\paragraph{Visual State Tracking and Self-Correction}
+Executing actions blindly without state verification causes catastrophic hallucination. Reflexion \cite{shinn2023reflexion} injects a linguistic episodic memory buffer, forcing agents to generate verbal reinforcement logs after errors. Synapse \cite{zheng2024synapse} uses trajectory-as-exemplar prompting, dynamically retrieving successful historical executions to guide the next step. WebAgent \cite{gur2023webagent} utilizes a multi-actor heuristic to parse dynamically changing DOM snippets during runtime, while ColorAgent \cite{li2025coloragent} focuses on long-horizon dynamic correction, recognizing environmental anomalies and actively recalculating its path.
 
-\subsection{Maintenance}
+\subsection{Maintenance Stage: Combating UI Decay and Context Overflow}
 \label{sec:maintenance}
-Maintenance emphasizes long-term operation and continual improvement. Safety is not a one-time deliverable; it co-evolves with environment changes, model updates, and adversarial tactics.
+The final stage addresses vulnerabilities over time. As software interfaces undergo natural decay (e.g., UI redesigns), CUAs require mechanisms for continuous evaluation, security auditing, and lifelong learning.
 
-\subsubsection{Continuous Evaluation and Regression}
-Model/interface updates can regress safety properties, motivating continuous benchmarks and regression testing. Benchmarks such as OS-HARM can serve as periodic regression suites~[38], while harmfulness measurement helps track misuse risk trends over time~[30]. The maintenance objective is to operationalize evaluation into scheduled scoring, release gating thresholds, failure attribution, and patch prioritization.
 
-\subsubsection{Vulnerability Management and Incident Response}
-CUAs may be exploited to perform vulnerability exploitation and extended attack chains. HackWorld provides an evaluation environment for web application vulnerability exploitation, enabling systematic measurement of offensive capability and potential risk~[25]. From a defensive perspective, such environments can also support ``attack regression'': turning known attack chains into persistent detection cases and verifying mitigations after patches.
 
-\subsubsection{Data/Policy Evolution and Enterprise Governance}
-A key maintenance thread is continual learning and policy updates. EvoCUA advocates evolving CUAs through scalable synthetic experience, aligning with a practical loop that converts online failures and adversarial cases into training data and policy updates~[21]. Enterprise deployment further demands stability, controllability, audit, and governance; enterprise-ready generalist agent research discusses system capabilities needed for operational readiness~[55].
+\paragraph{Dynamic Benchmarking and Security}
+Static datasets become obsolete rapidly. VisualWebArena \cite{koh2024visualwebarena} pushes evaluation frontiers by incorporating complex visual dependencies (e.g., interpreting charts). AgentBench \cite{liu2024agentbench} provides a multi-dimensional radar for OS capabilities. To tailor reinforcement learning to GUI tasks, CUARewardBench \cite{lin2025cuarewardbench} calibrates reward models specifically for computer-use trajectories. Moving towards domain-specific and industrial maintenance, EconWebArena \cite{liu2025econwebarena} evaluates agents on live financial/economic platforms, while WorkArena \cite{drouin2024workarena} assesses robustness in enterprise SaaS environments (e.g., ServiceNow). To counter static benchmark decay, Mind2Web-Live \cite{mind2weblive2025} introduces online regression testing on mutating live web environments. Furthermore, SafeArena \cite{kumar2025safearena} establishes critical security benchmarks, auditing resistance against prompt injections and destructive OS commands.
 
-\subsection{Discussion and Open Problems}
-From a lifecycle perspective, several cross-phase open problems emerge:
-(1) \textbf{Boundary between mechanism and learning:} which risks should be strictly enforced by mechanisms (privilege, isolation, controlled primitives) versus reduced by learning-based alignment? Interface abstractions~[2,51] and access control~[49] provide mechanism hooks, but their coupling with training-based alignment~[22,21] remains under-explored.
-(2) \textbf{From benchmarks to operational gating:} how do benchmarks (e.g.,~[32,38,30]) translate into release gates, alert thresholds, and maintenance regressions? How should red-teaming suites~[43] connect with runtime defense~[9]?
-(3) \textbf{Safety awareness in long-horizon tasks:} safety constraints may be forgotten or dominated by goals;~[32,27] observe this phenomenon, but maintaining constraints at runtime without excessive success-rate loss remains challenging.
-(4) \textbf{Explainable auditing and accountability:} vulnerability systematizations emphasize provenance and interaction binding~[4], yet standardized, usable audit evidence chains are still limited.
+\paragraph{Episodic Memory and Continual Learning}
+Continuous execution leads to context saturation. MemGPT \cite{packer2024memgpt} provides a foundational fix by borrowing memory paging from traditional OS, allowing agents to page context in and out of a finite context window to prevent catastrophic forgetting. WebCanvas \cite{pan2024webcanvas} utilizes runtime node-replay mechanisms to automatically log dynamic web changes, generating fresh training data organically. Finally, ExpeL \cite{zhao2023expel} facilitates experiential learning, allowing the agent to continuously fine-tune its internal policies via self-play, ensuring continuous evolution without computationally prohibitive retraining.

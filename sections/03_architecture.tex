@@ -1,126 +1,44 @@
-\section{Architecture}
+\section{Architectural Evolution of Computer-Use Agents: A Tri-Layer Taxonomy}
+\label{sec:architecture}
 
-\subsection{CUA Abstraction: A Closed-Loop Perception--Brain--Action System}
-
-Modern Computer-Use Agents (CUAs) have evolved from early rule-based
-heuristics into autonomous systems driven by multimodal large language models
-(MLLMs). Synthesizing recent core studies, the foundational CUA framework can
-be abstracted as a three-layer \emph{Perception--Brain--Action} (PBA)
-architecture \cite{wang2024llm_agents_survey}. This architecture operates
-across both GUI-centric and API-centric interaction pathways, while increasingly
-coupling security mechanisms into the execution loop. The unified framework is
-illustrated in Fig.~\ref{fig:cua_architecture}.
+The rapid advancement of Multimodal Large Language Models (MLLMs) has catalyzed the development of Computer-Use Agents (CUAs), transitioning them from narrow, domain-specific scripts to generalist systems capable of autonomous Graphical User Interface (GUI) navigation. To systematically evaluate the current state-of-the-art, we deconstruct the CUA architecture into three foundational layers: the \textit{Perception Layer}, the \textit{Decision Layer}, and the \textit{Execution Layer}. This taxonomy elucidates the data flow from raw pixel ingestion to physical or virtual action instantiation.
 
 \begin{figure*}[t]
-    \centering
-    \includegraphics[width=\textwidth]{images/picture3.1.png}
-    \caption{Three-stage CUA architecture under a closed-loop
-    Perception--Brain--Action design. Stage 1 performs perception and
-    sanitization, Stage 2 handles planning and reflection, and Stage 3 executes
-    validated actions under sandboxed isolation.}
-    \label{fig:cua_architecture}
+\centering
+\includegraphics[width=\textwidth]{images/p3.1.png}
+\caption{Tri-layer architecture of Computer-Use Agents (CUAs). Perception reconstructs GUI state, Decision performs intent reasoning and planning, and Execution maps plans to concrete actions with closed-loop state feedback.}
+\label{fig:tri_layer_architecture}
 \end{figure*}
 
-\subsubsection{Perception: Alignment and State Representation in Heterogeneous Environments}
+As illustrated in Fig.~\ref{fig:tri_layer_architecture}, the three layers form a closed control loop: environment observations are grounded into structured state representations, transformed into executable plans, and then fed back through updated system states after action execution.
 
-The perception layer transforms high-dimensional and noisy digital inputs (e.g.,
-pixel streams, HTML sources, API responses) into structured state
-representations consumable by foundation models. Technically, this layer has
-shifted from metadata-dependent parsing to vision-native grounding.
+\subsection{Perception Layer: Structured Reconstruction of Screen States}
+The primary objective of the Perception Layer is to bridge the semantic gap between human-readable visual layouts and machine-processable structured representations (i.e., GUI Grounding). Based on the source of state observation, existing methodologies can be categorized into three dominant paradigms.
 
-\textbf{Structured text and DOM-based perception.}
-Early web agents relied heavily on underlying interface metadata. WebArena and
-Mind2Web used reduced DOM trees or accessibility trees as primary inputs
-\cite{zhou2024webarena,deng2024mind2web}. While efficient in instrumented web
-settings, such approaches are brittle in closed-source software and dynamic
-rendering scenarios. In machine-centric interaction settings, Gorilla further
-examined structured API-document and JSON-schema grounding for tool-use
-decisions \cite{patil2023gorilla}.
+\textbf{DOM/A11y-based Parsing.} This paradigm relies on the explicit extraction of the underlying Document Object Model (DOM) or Accessibility (A11y) trees provided by the operating system or browser environment. Representative works such as Mind2Web \cite{deng2023mind2web} introduce candidate element filtering mechanisms to truncate excessively long DOM trees into manageable context windows. Similarly, WebArena \cite{zhou2024webarena} heavily leverages structured HTML representations to achieve deterministic state capture. While highly accurate in retrieving text and metadata, this approach suffers from severe cross-platform fragility and fails entirely in rendering-heavy applications like commercial video games or virtual machines.
 
-\textbf{Pure visual grounding and multimodal localization.}
-To remove dependence on privileged interface metadata, recent work moved toward
-direct screenshot understanding. CogAgent and ScreenAI demonstrated that
-high-resolution vision-language modeling can capture complex UI layout and
-semantics \cite{hong2024cogagent,baechler2024screenai}. SeeClick and Ferret-UI
-then introduced coordinate-grounded objectives, significantly improving
-fine-grained element localization on desktop and mobile environments
-\cite{cheng2024seeclick,you2024ferretui}. More recently, OmniParser proposed a
-pure-vision parsing paradigm that tokenizes UI screenshots and extracts icon
-semantics and text bounding boxes without external OCR dependency
-\cite{lu2024omniparser}.
+\textbf{Pure Vision-based Parsing.} To circumvent the limitations of system APIs, a growing body of research treats GUI interaction purely as a computer vision task. OmniParser \cite{omniparser} eliminates DOM dependency entirely, parsing raw screenshots into structured bounding boxes and text descriptions using pure visual cues. CogAgent \cite{hong2024cogagent} employs a dual-branch cross-attention mechanism to process high-resolution (up to 1120x1120) screen inputs, capturing minute UI icons effectively. Fuyu-8B \cite{bavishi2023fuyu} flattens image patches directly into transformer layers to enhance resolution flexibility, while Qwen-VL \cite{qwenvl} and UI-ViE \cite{uivie} have proven highly effective in zero-shot bounding box localization and complex visual information extraction (e.g., tables and lists).
 
-\textbf{Security-aware perception and environment sanitization.}
-As CUAs are exposed to adversarial environments, perception-layer fragility has
-become explicit. AgentXploit showed that hidden or context-poisoned interface
-content can trigger indirect prompt injection and manipulate downstream agent
-behavior \cite{liu2024agentxploit}. To mitigate this risk, Chen et al.
-introduced visual pre-filtering and sanitization pipelines for VLM-based CUAs,
-isolating untrusted external signals before they enter planning
-\cite{chen2024defending_ipi_vlm}.
+\textbf{Hybrid Modality Grounding.} State-of-the-art models increasingly fuse visual and structural priors. ScreenAI \cite{baechler2024screenai} integrates optical character recognition (OCR) with screen layout comprehension to generate rich-text UI representations. Ferret-UI \cite{you2025ferretui} embeds spatial coordinate predictions directly into multimodal token streams, enhancing mobile UI grounding. Recent efforts like SeeClick \cite{cheng2024seeclick}, TRISHUL \cite{trishul}, and the ScreenParse benchmark \cite{screenparse} advocate for holistic hierarchical screen parsing (HSP), transitioning perception from sparse point-clicking to dense, full-screen topological reconstruction.
 
-\subsubsection{Brain: Long-Horizon Planning, Memory, and Reflection}
+\subsection{Decision Layer: Intent Reasoning and Long-Horizon Planning}
+Acting as the cognitive core, the Decision Layer decomposes high-level natural language instructions into sequential operational trajectories. As task horizons extend, simple step-by-step mapping has evolved into sophisticated cognitive architectures.
+Long-horizon GUI tasks accumulate execution errors and context degradation, motivating both (i) correction loops and (ii) hierarchical decomposition in modern decision modules~\cite{xie2024osworld,LPSBench2026}.
 
-The brain layer serves as the system's executive control module: it handles
-goal decomposition, intent grounding, and dynamic routing across heterogeneous
-action channels. Its central challenge is maintaining coherent reasoning under
-long-horizon execution, where catastrophic forgetting and objective drift are
-common.
+\textbf{Memory-Augmented Planning.} To navigate novel environments without exhaustive trial-and-error, agents increasingly rely on episodic memory. AppAgent \cite{zhang2024appagent} explicitly separates an ``exploration stage'' from an ``execution stage,'' allowing the agent to compile a vectorized memory bank of UI interactions that are retrieved during complex task planning. InfiGUIAgent \cite{infiguiagent} similarly utilizes native reasoning and reflection, recalling past successful trajectories to avoid entering infinite operational loops. Generalist visual agents like OSWorld baselines \cite{xie2024osworld} heavily rely on context-aware retrieval to maintain state consistency across prolonged interactions.
 
-\textbf{Temporal planning and dynamic routing.}
-Building on the ReAct paradigm of interleaving reasoning and acting
-\cite{yao2023react}, recent CUA systems adopt more explicit planning topology.
-OSCopilot presented a general operating-system agent framework that decomposes
-system-level objectives into executable subtasks \cite{wu2024oscopilot}. In
-hybrid tool/UI settings, the brain must also perform cost-aware routing:
-prefer direct API/tool invocations when available (Toolformer-style), and
-degrade gracefully to GUI interaction when no reliable interface exists
-\cite{schick2023toolformer}.
+\textbf{Closed-loop Reflection and Correction.} Cumulative execution errors are fatal in multi-step CUA tasks. Consequently, robust decision layers incorporate ``Execution-Evaluation-Correction'' loops. WebVoyager \cite{he2024webvoyager} utilizes a hybrid visual-textual trajectory reasoning mechanism, enabling the agent to backtrack upon detecting a misclick. Auto-GUI \cite{autogui} enforces a ``Chain-of-Action'' prompting technique, compelling the model to articulate its deductive reasoning before outputting specific actions, thereby enhancing interpretability and self-correction. ReInAgent \cite{reinagent} extends this by integrating human-in-the-loop (HITL) active questioning to resolve ambiguous intents. Mobile-Agent \cite{wang2024mobile} further employs dynamic re-planning based on real-time visual feedback after every step.
 
-\textbf{Episodic memory and exploration.}
-When operating in unfamiliar software environments, CUAs benefit from active
-exploration and memory accumulation. AppAgent introduced autonomous trial-and-
-error interaction to build episodic action--state memory for downstream reuse
-\cite{zhan2024appagent}. AgentBoard evaluations further indicate that external
-memory mechanisms (e.g., retrieval over trajectory traces) can improve success
-rates in long-context, multi-turn tasks \cite{ma2024agentboard}.
+\textbf{Hierarchical and Multi-Agent Decomposition.} For cross-application workflows, monolithic decision architectures often suffer from context degradation. UFO \cite{zhang2024ufo} mitigates this via a dual-agent framework, utilizing an Application Agent for macro-level software routing and an Action Agent for micro-level operations. CoAct-1 \cite{coact1} introduces a central orchestrator to decompose complex cross-application tasks into manageable sub-routines, representing a shift toward multi-agent GUI orchestration.
 
-\textbf{Closed-loop reflection and alignment guardrails.}
-Real-world execution includes latency, UI non-determinism, and system errors.
-Reflexion introduced verbal reinforcement and self-correction loops that allow
-agents to backtrack and revise plans after failed actions \cite{shinn2023reflexion}.
-To reduce long-horizon goal hijacking risk, recent secure-agent designs also
-emphasize guardrails-by-construction, where side-channel monitors continuously
-check whether decision trajectories remain aligned with user intent
-\cite{liu2024agentxploit}.
+\subsection{Execution Layer: Instantiated Mapping of Action Spaces}
+The Execution Layer translates the logical intent formulated by the Decision Layer into physical or API-driven manifestations. The design of the Action Space is critical for determining the agent's degree of freedom.
 
-\subsubsection{Action: Unified Action Space and Polyglot Sandbox Isolation}
+\textbf{Atomic Mouse/Keyboard Emulation.} The most generalized execution paradigm defines the action space strictly as low-level $(x, y)$ coordinate clicks, drags, and keystrokes. Cradle \cite{wei2024cradle} successfully demonstrated that agents restricted to pure atomic inputs could master highly complex environments like 3D gaming (e.g., Red Dead Redemption 2). DeepMind's AndroidEnv \cite{androidenv} also conceptualizes mobile interactions fundamentally as parameterized touch and swipe gestures, a standard adopted by pure visual agents \cite{uitars, guibee}. 
+Security implication: this high-entropy action space maximizes flexibility but also enlarges the surface for misclicks, clickjacking, and action rebinding~\cite{ActionRebinding2026,Chameleon2025}.
 
-The action layer compiles planned intent into concrete operational effects. Its
-core design tension is balancing cross-platform generalization against
-potentially destructive execution risk.
+\textbf{Code-as-Action and API Invocation.} Conversely, for software interaction, simulating clicks is often suboptimal compared to direct programmatic control. OSCopilot \cite{wu2024oscopilot} utilizes code generation (Python/Bash) to manipulate operating systems, demonstrating substantial efficiency gains in file management. The GUI-360 framework \cite{gui360} advocates for a hybrid space where agents can trigger built-in application macros (e.g., Excel VBA) alongside UI clicks to accelerate execution. WebArena \cite{zhou2024webarena} limits execution to standardized JavaScript browser events to ensure deterministic evaluation.
+Security implication: higher-level execution compresses many actions into one call, so least privilege, provenance, and sandbox boundaries become more critical~\cite{Jones2025CUA,MCPSecurityBench2025}.
 
-\textbf{End-to-end native GUI control.}
-Traditional CUA stacks often depended on manually engineered controllers for
-coordinate mapping and event translation. UI-TARS and follow-up systems
-promoted an end-to-end paradigm that directly outputs absolute/relative
-coordinates and keyboard/mouse events, reporting strong benchmark performance
-\cite{qin2025uitars}. OS-ATLAS further showed that large-scale cross-platform
-pretraining (Windows/macOS/Linux) can learn a more unified and generalizable
-action space \cite{boyce2025osatlas}.
-
-\textbf{Code-as-Action and Agent-Computer Interface (ACI).}
-For backend-heavy or computation-intensive tasks, pure GUI clicking is often
-inefficient. SWE-agent proposed an agent-computer interface (ACI) that allows
-models to generate and execute Bash/Python code in terminal environments,
-expanding CUA capability in software engineering workflows
-\cite{yang2024sweagent}.
-
-\textbf{Isolated execution and human-in-the-loop (HITL).}
-Because action-layer outputs can directly mutate file systems, credentials, and
-network states, environment-level isolation is critical. OSWorld and related
-evaluation settings highlight the necessity of realistic yet controlled
-execution environments \cite{xie2024osworld}. In production-grade deployments,
-generated code should run in stateless containers or virtual machines; in
-addition, sensitive operations (e.g., privilege escalation) should trigger
-human-in-the-loop confirmation to provide strong validation for irreversible
-actions.
+\textbf{Macro-Action and Continuous Control.} Bridging the gap between atomic inputs and API calls, recent architectures aim to abstract repetitive low-level behaviors. AppAgentX \cite{appagentx} introduces an evolutionary mechanism where the agent autonomously encapsulates frequently used sequences (e.g., \textit{Move $\rightarrow$ Click $\rightarrow$ Type}) into high-level macro-actions. Furthermore, ScreenAgent \cite{niu2024screenagent} and OmegaUse \cite{omegause} have formalized parameterized continuous control variables, allowing agents to execute complex, multi-stage scrolling or drag-and-drop operations with a single cohesive command.
+Security implication: macro-abstractions reduce low-level action entropy but introduce verification and audit challenges when one command encapsulates multiple high-impact steps~\cite{AgentSecurityBench2025,VeriGuard2025}.

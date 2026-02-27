@@ -1,95 +1,38 @@
 \section{Background}
+\label{sec:background}
 
-\subsection{From Content-Level Risks to Action-Level Hazards}
+This section introduces preliminaries required to reason about CUAs in a unified manner. We formalize the CUA interaction loop, clarify environment assumptions, and motivate why architectural and lifecycle views are both necessary.
 
-Conventional LLM systems are primarily exposed to \emph{content-level} failure
-modes, including misleading generation, privacy-sensitive text leakage, and
-overreaching recommendations. In these systems, harmful output is usually
-bounded by language itself: the model ``says'' something wrong, unsafe, or
-inappropriate. In contrast, Computer-Use Agents (CUAs) possess
-environment-execution capabilities, allowing model outputs to be translated
-into concrete operations across software interfaces. As a result, classical
-LLM risks are not merely preserved but operationally amplified into
-\emph{action-level} hazards with higher real-world impact.
+\subsection{Problem Formulation: GUI Interaction as Partially Observable Control}
+A CUA operates over a GUI-driven environment $\mathcal{E}$ (web page, desktop OS, mobile app) under a user instruction $g$ expressed in natural language. At step $t$, the agent receives an observation $o_t$ (e.g., screenshot pixels, DOM/A11y tree, or a hybrid representation) and produces an action $a_t$ drawn from an action space $\mathcal{A}$ (mouse/keyboard/touch events, API calls, code execution, or macro-actions). The environment transitions and returns a new observation.
+In realistic settings, the interaction is \textbf{partially observable} and \textbf{non-stationary}: interface states can change due to asynchronous events (pop-ups, ads, network updates)~\cite{zhou2024webarena,he2024webvoyager}, while the agent's observation may omit latent states (hidden UI layers, permission dialogs, or system-level context)~\cite{xie2024osworld}.
 
+This differs from classical embodied control in two ways:
 \begin{itemize}
-\item \textbf{Expanded input attack surface.} CUA perception is no longer limited
-to a single prompt channel. Web pages, pop-up dialogs, emails, local
-documents, chat messages, and desktop notifications can all function as
-instruction carriers. This multi-channel exposure increases susceptibility to
-indirect prompt injection, where malicious or irrelevant interface content
-steers the agent away from user intent while appearing contextually
-plausible [3--4, 16--18]. Unlike direct jailbreaking, these attacks are
-embedded in ordinary task environments, making detection harder and
-raising the likelihood of silent objective drift.
-
-\item \textbf{Privilege and toolchain connectivity.} CUAs are often integrated
-with persistent browser sessions, local file systems, terminal/script
-execution, and authenticated account states. This creates a continuous path
-from ``influence'' to ``execution'': an attacker-controlled instruction can
-progress from content manipulation to privileged operations, such as data
-exfiltration, unauthorized transaction steps, or unsafe command invocation
-[4, 13--15, 33--36]. Therefore, the security boundary is no longer the model
-response surface; it extends to every connected tool and credential context.
-
-\item \textbf{Amplification in long-horizon workflows.} CUA tasks are frequently
-multi-step, cross-application, and stateful. As horizon length grows, small
-reasoning errors, permission mistakes, or policy violations can compound and
-be automatically propagated across downstream actions. This temporal
-amplification makes incidents more difficult to audit, attribute, and roll
-back, especially when intermediate decisions are implicit or weakly logged
-[26--31, 60--61]. Consequently, reliability and governance for CUAs must be
-evaluated as process integrity over time, not only as single-turn response
-quality.
+  \item GUIs are semantically dense---small visual elements (icons, toggles) can represent high-impact operations.
+  \item The environment is often \textbf{adversarial or untrusted}: web content, documents, and tool outputs can embed instructions intended to override user intent (prompt injection), motivating explicit trust boundaries in agent design~\cite{liu2025wainjectbench,AegisProtocol2025}.
 \end{itemize}
 
-Taken together, these properties indicate a categorical shift in risk: CUAs
-should be modeled as socio-technical execution systems rather than text-only
-assistants. This motivates security controls that combine prompt-level
-defenses with runtime policy enforcement, least-privilege tool access,
-action confirmation boundaries, and end-to-end traceability.
+\subsection{Environment Modalities and State Representations}
+A central design axis is how state is represented for reasoning and grounding.
+In web settings, DOM trees and accessibility metadata provide structured, machine-readable UI descriptions; this supports deterministic element selection but can be fragile across platforms and fails in rendering-heavy or remote/virtual environments~\cite{zhou2024webarena}.
+Conversely, pixel-based perception treats GUI interaction as a vision-language grounding problem, enabling platform-agnostic deployment at the cost of localization errors and sensitivity to resolution, scaling, and visual perturbations.
+Hybrid representations combine vision with structural priors (OCR, layout graphs, hierarchical parsing), seeking robust grounding without full dependency on system APIs.
 
-\subsection{Ecosystem-Specific Security: MCP and Skills}
+From a benchmarking perspective, Mind2Web targets generalist web instruction following on diverse websites~\cite{deng2023mind2web}, WebArena provides realistic and reproducible web environments~\cite{zhou2024webarena}, and OSWorld evaluates open-ended tasks in real computer environments spanning arbitrary applications~\cite{xie2024osworld}. These benchmarks collectively motivate a unified taxonomy for comparing agents operating under different observation channels.
 
-Beyond generic CUA risks, two ecosystem components deserve explicit treatment:
-\emph{MCP-based tool integration} and \emph{skill-based capability reuse}.
-Both improve extensibility, but both also introduce additional trust
-dependencies and compositional failure modes.
+\subsection{Action Spaces and Execution Interfaces}
+The \textbf{action space} determines not only capability but also the safety surface area.
+Low-level atomic actions (click, drag, type) are maximally general but error-prone: small coordinate offsets can cause misclicks, and delayed execution can lead to time-of-check/time-of-use mismatches.
+Higher-level actions (API invocation, code-as-action, macro-actions) improve efficiency and auditability but introduce new risks, including over-privilege and tool misuse.
+Modern systems increasingly mix action modalities, combining GUI actions with programmatic execution to accelerate workflows.
 
-\textbf{MCP trust boundary risks.}
-MCP-style integration allows an agent to access external tools/resources
-through server endpoints. If endpoint identity, transport integrity, or tool
-schema constraints are weak, a malicious (or compromised) MCP server can
-inject manipulated outputs that appear operationally valid. This can convert
-context poisoning into privileged side effects, including unauthorized file
-access, leakage of sensitive workspace context, and hidden execution of unsafe
-operations via abstract tool calls. In practice, MCP security is therefore not
-only a connectivity issue; it is a cross-boundary execution integrity issue.
+\subsection{Why Both Architecture and Lifecycle Views Matter}
+A purely component-wise taxonomy is insufficient because many failure modes are \textbf{stage-dependent}.
+Training-time data and objectives constrain what the agent can perceive (\emph{Creation}), deployment integrations determine what it is allowed to access (\emph{Deployment}), long-horizon execution triggers compounding errors and injection attacks (\emph{Execution}), and updates plus ecosystem interactions drive regression and propagation risk (\emph{Maintenance}).
+Accordingly, we adopt a four-stage lifecycle taxonomy---\emph{Creation, Deployment, Execution, and Maintenance}---to align engineering choices with where vulnerabilities originate and how they persist.
 
-\textbf{Skill supply-chain and execution risks.}
-Skills package prompts, scripts, and reusable workflows. This packaging model
-reduces engineering overhead, but it creates plugin-like supply-chain risk.
-Untrusted or poorly reviewed skills may contain over-privileged steps,
-dangerous command templates, covert data egress logic, or prompt constructions
-that degrade policy compliance. Even benign skills can become unsafe through
-version drift and undocumented behavioral changes. Accordingly, skill adoption
-requires provenance validation, version pinning, permission scoping, and
-runtime policy checks rather than one-time functional testing.
-
-\textbf{Compositional risk in long-horizon execution.}
-The highest-impact failures often occur when skills orchestrate multi-step
-actions across several MCP servers. Local checks may pass at each hop while
-the end-to-end chain still violates user intent or security policy. This
-visibility gap complicates accountability because different components may log
-different abstractions of the same action. Hence, CUA assurance must evaluate
-the entire execution graph (inputs, tool calls, credentials, state changes,
-and side effects) under adversarial conditions, not isolated components.
-
-\textbf{Governance implications.}
-These properties motivate concrete controls in future CUA governance
-architecture: authenticated MCP channels, strict tool I/O typing and policy
-enforcement, least-privilege credential delegation, sandboxed skill execution,
-high-risk action confirmation, and tamper-evident audit trails for incident
-reconstruction. In short, MCP servers and skills should be treated as
-first-class security principals, not neutral implementation details.
- 
+\subsection{Security and Governance Preliminaries: Attribution and Trust Boundaries}
+To discuss safety in CUAs, we require an attribution lens that distinguishes \emph{why} unsafe behavior occurs.
+We build on a threat-modeling view and distinguish curiosity-driven overreach from malice induced by adversarial content, while also recognizing environment-driven harms (e.g., UI deception) that do not require model intent~\cite{raza2026agenticsecurity,SafeArena2025,OSHarm2025}.
+Empirically, safety benchmarks such as OS-Harm and SafeArena highlight that dialogue-level alignment does not automatically transfer to action-level safety for web/OS agents~\cite{OSHarm2025,SafeArena2025}.

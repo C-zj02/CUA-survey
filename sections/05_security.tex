@@ -1,31 +1,31 @@
 \section{Security and Privacy Analysis}
 \label{sec:security}
 
-This section provides a comprehensive analysis of security and privacy risks in the Computer-Use Agent (CUA) ecosystem. Unlike traditional LLM safety, which focuses primarily on dialogue and text generation, CUAs introduce \textbf{action-level} threats: agents that perceive screens, reason over goals, and execute low-level UI operations pose unique vulnerabilities at the intersection of perception, reasoning, and execution~\cite{Jones2025CUA,EvilGeniuses2024}. Building on the lifecycle perspective in Section~\ref{sec:lifecycle}, where CUA creation, deployment, operation, and maintenance are organized from a security-engineering standpoint, we focus here on \emph{threats} that materialize across these phases. We ground our analysis in a formal threat model, an attribution framework that distinguishes LLM subjective factors (curiosity and malice), and a lifecycle-oriented organization aligned with Section~\ref{sec:lifecycle}. Table~\ref{tab:cua_threats} summarizes the threat taxonomy by lifecycle phase and attribution class. Our goal is to draw on empirical findings from recent benchmarks and defense research.
+This section provides a comprehensive analysis of security and privacy risks in the Computer-Use Agent (CUA) ecosystem. Unlike traditional LLM safety, which focuses primarily on dialogue and text generation, CUAs introduce \textbf{action-level} threats: agents that perceive screens, reason over goals, and execute low-level UI operations pose unique vulnerabilities at the intersection of perception, reasoning, and execution~\cite{Jones2025CUA,EvilGeniuses2024}. Building on the lifecycle perspective in Section~\ref{sec:lifecycle}, where CUA creation, deployment, execution, and maintenance are organized from a security-engineering standpoint, we focus here on \emph{threats} that materialize across these stages. We ground our analysis in a formal threat model, an attribution framework that distinguishes LLM subjective factors (curiosity and malice), and a lifecycle-oriented organization aligned with Section~\ref{sec:lifecycle}. Table~\ref{tab:cua_threats} summarizes the threat taxonomy by lifecycle stage and attribution class. Our goal is to draw on empirical findings from recent benchmarks and defense research.
 
 \begin{table*}[!t]
 \centering
 \small
+\caption{Threat taxonomy by lifecycle stage and attribution class (C: curious, M: malicious, E: environmental/non-subjective).}
+\label{tab:cua_threats}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{llll}
 \toprule
-\textbf{Phase} & \textbf{Threat Type} & \textbf{Attribution} & \textbf{Representative Work} \\
+\textbf{Stage} & \textbf{Threat Type} & \textbf{Attribution} & \textbf{Representative Work} \\
 \midrule
 Creation & PoT backdoor, training-time poisoning & $\neg$C, M & BadVLA~\cite{BadVLA2025}, Hidden Ghost Hand~\cite{HiddenGhostHand2025} \\
 Creation & Unsafe action interfaces and safety gaps & E & OS-Harm~\cite{OSHarm2025}, CUAHarm~\cite{CUAHarm2025} \\
 Deployment & Over-privilege, weak isolation & E & Jones~\cite{Jones2025CUA}, CSAgent~\cite{CSAgent2025} \\
 Deployment & Supply-chain risk (skills, MCP) & $\neg$C, M or E & Les Dissonances~\cite{LesDissonances2025}, MCP Security Bench~\cite{MCPSecurityBench2025} \\
-Operation & TOCTOU, action rebinding & $\neg$C, $\neg$M & ActionRebinding~\cite{ActionRebinding2026}, AgentHazard~\cite{AgentHazard2026} \\
-Operation & Clickjacking, visual anchors & $\neg$C, $\neg$M & Chameleon~\cite{Chameleon2025}, WAInjectBench~\cite{WAInjectBench2025} \\
-Operation & IPI, EIA & $\neg$C, M or C, M & InjecAgent~\cite{InjecAgent2024}, WASP~\cite{WASP2025}, Chameleon~\cite{Chameleon2025} \\
-Operation & Memory/RAG poisoning & $\neg$C, M & AgentPoison~\cite{AgentPoison2025} \\
-Operation & Curiosity-driven overreach, PII leakage & C, $\neg$M or $\neg$C, M & AgentDAM~\cite{AgentDAM2025}, SafeArena~\cite{SafeArena2025} \\
+Execution & TOCTOU, action rebinding & $\neg$C, $\neg$M & ActionRebinding~\cite{ActionRebinding2026}, AgentHazard~\cite{AgentHazard2026} \\
+Execution & Clickjacking, visual anchors & $\neg$C, $\neg$M & Chameleon~\cite{Chameleon2025}, WAInjectBench~\cite{liu2025wainjectbench} \\
+Execution & IPI, EIA & $\neg$C, M or C, M & InjecAgent~\cite{InjecAgent2024}, WASP~\cite{WASP2025}, Chameleon~\cite{Chameleon2025} \\
+Execution & Memory/RAG poisoning & $\neg$C, M & AgentPoison~\cite{AgentPoison2025} \\
+Execution & Curiosity-driven overreach, PII leakage & C, $\neg$M or $\neg$C, M & AgentDAM~\cite{AgentDAM2025}, SafeArena~\cite{SafeArena2025} \\
 Maintenance & Agent-to-agent propagation & C, $\neg$M or $\neg$C, M & Chen~\cite{Chen2026Moltbook}, Prompt Infection~\cite{PromptInfection2024} \\
-Maintenance & Governance gaps & E & Aegis~\cite{AegisProtocol2025}, Agentic AI Survey~\cite{AgenticAICybersecuritySurvey2026} \\
+Maintenance & Governance gaps & E & Aegis~\cite{AegisProtocol2025}, Agentic AI Survey~\cite{raza2026agenticsecurity} \\
 \bottomrule
 \end{tabular}
-\caption{Threat taxonomy by lifecycle stage and attribution class (C: curious, M: malicious, E: environmental/non-subjective).}
-\label{tab:cua_threats}
 \end{table*}
 
 \subsection{Threat Model}
@@ -43,7 +43,7 @@ To structure CUA security analysis, we adopt a threat-modeling approach that exp
 
 \textbf{Threat types.} We map CUA-specific risks to STRIDE-inspired categories: \emph{Spoofing} (IPI, EIA---malicious instructions masquerading as data); \emph{Tampering} (memory poisoning, RAG poisoning, backdoors); \emph{Repudiation} (weak audit trails, unclear provenance); \emph{Information disclosure} (PII leakage, cross-application exfiltration); \emph{Denial of service} (agent hijacking, resource exhaustion); and \emph{Elevation of privilege} (over-privileged access, action rebinding). 
 
-From a lifecycle viewpoint, these threats materialize differently across phases. In the \emph{Creation/Development} phase, attackers primarily target training data, model parameters, and interface design, leading to backdoors or unsafe action spaces. During \emph{Deployment}, misconfigured trust boundaries (e.g., missing provenance, weak isolation) expose systems to spoofing and elevation-of-privilege risks. In \emph{Operation}, open, adversarial environments enable UI deception, prompt injection, and memory/RAG poisoning that drive tampering, information disclosure, and denial of service. Finally, in \emph{Maintenance}, multi-agent ecosystems and continuous updates introduce propagation, regression, and governance risks. The following attribution framework further refines how we assign responsibility for unsafe behavior within this lifecycle.
+From a lifecycle viewpoint, these threats materialize differently across stages. In the \emph{Creation/Development} stage, attackers primarily target training data, model parameters, and interface design, leading to backdoors or unsafe action spaces. During \emph{Deployment}, misconfigured trust boundaries (e.g., missing provenance, weak isolation) expose systems to spoofing and elevation-of-privilege risks. In \emph{Execution}, open, adversarial environments enable UI deception, prompt injection, and memory/RAG poisoning that drive tampering, information disclosure, and denial of service. Finally, in \emph{Maintenance}, multi-agent ecosystems and continuous updates introduce propagation, regression, and governance risks. The following attribution framework further refines how we assign responsibility for unsafe behavior within this lifecycle.
 
 \subsection{Attribution Framework: LLM Subjectivity}
 \label{subsec:attribution}
@@ -59,6 +59,8 @@ The 2$\times$2 matrix yields four classes: \textbf{curious + malicious}, \textbf
 \begin{table}[htbp]
 \centering
 \small
+\caption{Attribution matrix over curiosity and malice.}
+\label{tab:attribution_matrix}
 \begin{tabularx}{\columnwidth}{lYY}
 \toprule
  & \textbf{Non-malicious} & \textbf{Malicious} \\
@@ -67,29 +69,27 @@ The 2$\times$2 matrix yields four classes: \textbf{curious + malicious}, \textbf
 \textbf{Curious} & Curious + non-malicious & Curious + malicious \\
 \bottomrule
 \end{tabularx}
-\caption{Attribution matrix over curiosity and malice.}
-\label{tab:attribution_matrix}
 \end{table}
 
-\subsection{Threats in the Creation/Development Phase}
+\subsection{Threats in the Creation/Development Stage}
 \label{subsec:threats_creation}
 
-Threats rooted in the creation phase are introduced during design, training, or interface construction and often manifest later during operation or maintenance. They mainly involve adversarial control over training data and model internals, targeting assets such as model parameters and interface primitives and breaking tampering and elevation-of-privilege boundaries.
+Threats rooted in the creation stage are introduced during design, training, or interface construction and often manifest later during execution or maintenance. They mainly involve adversarial control over training data and model internals, targeting assets such as model parameters and interface primitives and breaking tampering and elevation-of-privilege boundaries.
 
 \subsubsection{Plan-of-Thought Backdoors and Training-time Poisoning}
 {\small\noindent\textit{Lifecycle stage: Creation/Development}}\par
 {\small\noindent\textit{Attribution: non-curious ($\neg$C), malicious (M).}}\par\vspace{0.25em}
-Attackers can implant triggers in vision-language-action models via training-time manipulation. At inference, benign inputs containing the trigger induce malicious actions (e.g., navigation to attacker-controlled endpoints) at near-100\% success while leaving benign performance intact~\cite{BadVLA2025}. Hidden Ghost Hand~\cite{HiddenGhostHand2025} demonstrates composite triggers for mobile GUI agents with 99.7\% attack accuracy. The Agent Security Bench~\cite{AgentSecurityBench2025} formalizes PoT backdoors as a distinct class. These threats are attributed to malice because the model, once triggered, acts with harmful intent; they are non-curious because the trigger is targeted, not exploratory. Root cause lies in Creation; manifestation occurs primarily in Operation (see Section~\ref{sec:operation}).
+Attackers can implant triggers in vision-language-action models via training-time manipulation. At inference, benign inputs containing the trigger induce malicious actions (e.g., navigation to attacker-controlled endpoints) at near-100\% success while leaving benign performance intact~\cite{BadVLA2025}. Hidden Ghost Hand~\cite{HiddenGhostHand2025} demonstrates composite triggers for mobile GUI agents with 99.7\% attack accuracy. The Agent Security Bench~\cite{AgentSecurityBench2025} formalizes PoT backdoors as a distinct class. These threats are attributed to malice because the model, once triggered, acts with harmful intent; they are non-curious because the trigger is targeted, not exploratory. Root cause lies in Creation; manifestation occurs primarily in Execution (see Section~\ref{sec:execution}).
 
 \subsubsection{Unsafe Action Interfaces and Design Gaps}
 {\small\noindent\textit{Lifecycle stage: Creation/Development}}\par
 {\small\noindent\textit{Attribution: environmental (E).}}\par\vspace{0.25em}
 Low-level, high-entropy action spaces increase attackability; interface abstractions that constrain primitives can reduce risk~\cite{Jones2025CUA}. When CUAs are designed without safe interface abstractions, high-impact operations (payments, deletions, installations) are exposed directly to model decisions, expanding the attack surface for spoofing and elevation of privilege. Benchmarks such as OS-Harm~\cite{OSHarm2025} and CUAHarm~\cite{CUAHarm2025} highlight how unsafe interfaces and missing lifecycle-aware safety design make it harder to measure, compare, and improve security, but the core threat is environmental: unsafe interface construction rather than model curiosity or malice.
 
-\subsection{Threats in the Deployment Phase}
+\subsection{Threats in the Deployment Stage}
 \label{subsec:threats_deployment}
 
-Deployment-phase threats arise when systems are integrated into real environments without adequate boundaries. They enable or amplify operation-phase attacks by misconfiguring trust boundaries between users, environments, and tools.
+Deployment-stage threats arise when systems are integrated into real environments without adequate boundaries. They enable or amplify execution-stage attacks by misconfiguring trust boundaries between users, environments, and tools.
 
 \subsubsection{Over-privilege and Weak Isolation}
 {\small\noindent\textit{Lifecycle stage: Deployment}}\par
@@ -99,57 +99,57 @@ Jones et al.~\cite{Jones2025CUA} identify missing provenance, weak interaction b
 \subsubsection{Supply-chain Risk in Skills and MCP Tools}
 {\small\noindent\textit{Lifecycle stage: Deployment}}\par
 {\small\noindent\textit{Attribution: non-curious malicious ($\neg$C, M) and environmental (E).}}\par\vspace{0.25em}
-Skills and MCP tool integrations introduce plugin-like supply-chain risk. Les Dissonances~\cite{LesDissonances2025} find 75\% of 66 real-world LangChain/LlamaIndex tools vulnerable to confidential data collection and pollution. The MCP Security Bench~\cite{MCPSecurityBench2025} systematizes 12 attack types across tool discovery, parameter passing, and result return. Malicious skills embody malice (non-curious); vulnerable but benign tools represent environmental weakness. Root cause is in Deployment; impact spans Operation and Maintenance.
+Skills and MCP tool integrations introduce plugin-like supply-chain risk. Les Dissonances~\cite{LesDissonances2025} find 75\% of 66 real-world LangChain/LlamaIndex tools vulnerable to confidential data collection and pollution. The MCP Security Bench~\cite{MCPSecurityBench2025} systematizes 12 attack types across tool discovery, parameter passing, and result return. Malicious skills embody malice (non-curious); vulnerable but benign tools represent environmental weakness. Root cause is in Deployment; impact spans Execution and Maintenance.
 
 \subsubsection{Insufficient Pre-release Red Teaming}
 {\small\noindent\textit{Lifecycle stage: Deployment}}\par
 {\small\noindent\textit{Attribution: environmental (E).}}\par\vspace{0.25em}
-RedTeamCUA~\cite{RedTeamCUA2025} provides realistic adversarial testing for hybrid web--OS environments. Without such gating, agents enter operation with undiscovered vulnerabilities. From a lifecycle perspective, creation- and deployment-stage red teaming should feed regression test suites in Maintenance and runtime monitoring rules in Operation (see Sections~\ref{sec:operation} and~\ref{sec:maintenance}).
+RedTeamCUA~\cite{RedTeamCUA2025} provides realistic adversarial testing for hybrid web--OS environments. Without such gating, agents enter execution with undiscovered vulnerabilities. From a lifecycle perspective, creation- and deployment-stage red teaming should feed regression test suites in Maintenance and runtime monitoring rules in Execution (see Sections~\ref{sec:execution} and~\ref{sec:maintenance}).
 
-\subsection{Threats in the Operation Phase}
-\label{subsec:threats_operation}
+\subsection{Threats in the Execution Stage}
+\label{subsec:threats_execution}
 
-Operation is where most threats manifest. Open, adversarial environments interact with model curiosity and malice, and runtime actions directly affect user assets and system privileges.
+Execution is where most threats manifest. Open, adversarial environments interact with model curiosity and malice, and runtime actions directly affect user assets and system privileges.
 
 \subsubsection{TOCTOU and Action Rebinding}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: non-curious, non-malicious ($\neg$C, $\neg$M).}}\par\vspace{0.25em}
 CUAs exhibit a ``reasoning gap'' of 4--15 seconds between perceiving a screen and executing an action~\cite{ActionRebinding2026}. During this window, an attacker can rebind the agent's intended click to a malicious UI component. The model's intent is correct; the environment changes. Qian et al.~\cite{ActionRebinding2026} demonstrate 100\% authorization hijacking across six Android agents. AgentHazard~\cite{AgentHazard2026} shows misleading content (ads, overlays) can steer agents with 40\%+ success. This is environmental: the model bears no subjective fault.
 
 \subsubsection{Clickjacking and Visual Anchor Injection}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: non-curious, non-malicious ($\neg$C, $\neg$M).}}\par\vspace{0.25em}
-Attackers influence perception through hidden or deceptive visual elements. Chameleon~\cite{Chameleon2025} optimizes trigger images occupying 4--10\% of pixels, raising attack success from ~5\% to 32.6\%. WAInjectBench~\cite{WAInjectBench2025} finds textual detectors fail against imperceptible pixel perturbations. Cross-modal defenses are required; text-only sanitization is insufficient.
+Attackers influence perception through hidden or deceptive visual elements. Chameleon~\cite{Chameleon2025} optimizes trigger images occupying 4--10\% of pixels, raising attack success from ~5\% to 32.6\%. WAInjectBench~\cite{liu2025wainjectbench} finds textual detectors fail against imperceptible pixel perturbations. Cross-modal defenses are required; text-only sanitization is insufficient.
 
 \subsubsection{Indirect Prompt Injection and Environmental Injection}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: non-curious malicious ($\neg$C{,} M) and curious malicious (C{,} M).}}\par\vspace{0.25em}
 Malicious instructions in web pages, documents, or MCP returns are consumed as authoritative. InjecAgent~\cite{InjecAgent2024} benchmarks 1,054 cases; ReAct-prompted GPT-4 was vulnerable 24\% of the time, nearly doubling with hacking prompts. WASP~\cite{WASP2025} reports ~86\% deception in end-to-end web navigation. SafeSearch~\cite{SafeSearch2025} finds 90.5\% ASR when poisoned search results are injected. Chameleon~\cite{Chameleon2025} and GhostEI-Bench~\cite{GhostEIBench2025} cover environmental injection in dynamic and mobile settings. Attribution depends on whether the model ``believes'' and internalizes the injected intent (malicious) or is merely curious and follows interesting content (curious and non-malicious). Defenses must treat tool outputs as potentially adversarial~\cite{BrowseSafe2025}.
 
 \subsubsection{Memory and RAG Poisoning}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: non-curious, malicious ($\neg$C, M).}}\par\vspace{0.25em}
 AgentPoison~\cite{AgentPoison2025} optimizes poisoned documents for retrieval-triggered latent instructions. The Agent Security Bench~\cite{AgentSecurityBench2025} identifies memory poisoning as more persistent than one-shot injection. Les Dissonances~\cite{LesDissonances2025} study cross-tool harvesting and polluting. These attacks implant long-lived malicious logic; the model acts with harmful intent when retrieval activates it.
 
 \subsubsection{Curiosity-driven Overreach and Data Minimization Violations}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: curious, non-malicious (C, $\neg$M) and non-curious, malicious ($\neg$C, M).}}\par\vspace{0.25em}
 AgentDAM~\cite{AgentDAM2025} evaluates whether agents follow data minimization; mainstream models frequently capture and leak irrelevant PII. SafeArena~\cite{SafeArena2025} shows GPT-4o completes 34.7\% of harmful tasks on real sites. PrivacyChecker~\cite{PrivacyChecker2025} proposes context-integrity filtering, reducing leakage from 36\% to 7--8\%. Tool chaining can pipeline data across applications~\cite{Jones2025CUA,LesDissonances2025}. Over-collection may be curiosity-driven (exploring beyond task) or induced (malicious). Lifecycle-aware controls must therefore address both subjective and environmental factors.
 
 \subsubsection{Long-horizon Constraint Forgetting}
-{\small\noindent\textit{Lifecycle stage: Operation}}\par
+{\small\noindent\textit{Lifecycle stage: Execution}}\par
 {\small\noindent\textit{Attribution: curious, non-malicious (C, $\neg$M) and environmental (E).}}\par\vspace{0.25em}
 LPS-BENCH~\cite{LPSBench2026} finds agents lack foresight for cascading risks; goals can dominate safety constraints. OS-Harm~\cite{OSHarm2025} and CUAHarm~\cite{CUAHarm2025} show dialogue-level alignment does not transfer to action. Scenario-specific alignment and behavioral measurement are required to maintain constraints across long-horizon plans.
 
-\subsection{Threats in the Maintenance Phase}
+\subsection{Threats in the Maintenance Stage}
 \label{subsec:threats_maintenance}
 
-Maintenance-phase threats involve long-term operation, iteration, and multi-agent ecosystems. They particularly affect assets such as shared skills, historical memory, and platform-level governance.
+Maintenance-stage threats involve long-term operation, iteration, and multi-agent ecosystems. They particularly affect assets such as shared skills, historical memory, and platform-level governance.
 
 \subsubsection{Agent-to-agent Propagation}
 {\small\noindent\textit{Lifecycle stage: Maintenance}}\par
 {\small\noindent\textit{Attribution: curious, non-malicious (C, $\neg$M) and non-curious, malicious ($\neg$C, M).}}\par\vspace{0.25em}
-Chen et al.~\cite{Chen2026Moltbook} present the first empirical study of peer learning among AI agents on Moltbook: 2.4M agents participate; teaching statements outnumber help-seeking 11.4:1; skills propagate at machine scale with minimal human vetting. Prompt Infection~\cite{PromptInfection2024} shows malicious prompts can self-replicate across agents. The Aegis Protocol~\cite{AegisProtocol2025} and Agentic AI Cybersecurity Survey~\cite{AgenticAICybersecuritySurvey2026} identify agent collusion, cascading failures, and oversight evasion. Multi-Agent Security Tax~\cite{MultiAgentSecurityTax2025} analyzes the trade-off between security and collaboration. Skill sharing can be curiosity-driven (benign propagation) or malice-driven (malicious skill distribution). Governance of ``agent societies''---content responsibility, identity verification, semantic malware containment---demands new frameworks. See Section~\ref{sec:discussion} for implications and recommendations.
+Chen et al.~\cite{Chen2026Moltbook} present the first empirical study of peer learning among AI agents on Moltbook: 2.4M agents participate; teaching statements outnumber help-seeking 11.4:1; skills propagate at machine scale with minimal human vetting. Prompt Infection~\cite{PromptInfection2024} shows malicious prompts can self-replicate across agents. The Aegis Protocol~\cite{AegisProtocol2025} and Agentic AI Cybersecurity Survey~\cite{raza2026agenticsecurity} identify agent collusion, cascading failures, and oversight evasion. Multi-Agent Security Tax~\cite{MultiAgentSecurityTax2025} analyzes the trade-off between security and collaboration. Skill sharing can be curiosity-driven (benign propagation) or malice-driven (malicious skill distribution). Governance of ``agent societies''---content responsibility, identity verification, semantic malware containment---demands new frameworks. See Section~\ref{sec:discussion} for implications and recommendations.
 
 \subsubsection{Governance Gaps and Continuous Evaluation}
 {\small\noindent\textit{Lifecycle stage: Maintenance}}\par
