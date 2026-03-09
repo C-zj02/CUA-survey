@@ -26,7 +26,7 @@ scope focus: resource curation \\
 OS-Harm~\cite{OSHarm2025} & OS/Computer-use safety benchmark &
 -- & -- & \checkmark & -- &
 scope focus: benchmark evaluation \\
-SafeArena~\cite{SafeArena2025} & Web-agent misuse benchmark &
+SafeArena~\cite{kumar2025safearena} & Web-agent misuse benchmark &
 -- & -- & \checkmark & -- &
 scope focus: misuse evaluation \\
 WAInjectBench~\cite{liu2025wainjectbench} & Prompt-injection benchmark &
@@ -49,15 +49,15 @@ scope focus: security protocols \\
 \end{table*}
 
 Despite fast capability gains, the CUA ecosystem faces two structural bottlenecks that motivate this survey.
-\textbf{First, architectural heterogeneity} makes it difficult to compare approaches: some agents rely on DOM/accessibility trees for state~\cite{deng2023mind2web,zhou2024webarena}, others operate purely from pixels~\cite{omniparser,hong2024cogagent}, and still others hybridize structural priors with vision~\cite{baechler2024screenai}. Likewise, decision modules vary from single-pass action prediction to memory-augmented, reflective, and multi-agent planners~\cite{xie2024osworld,zhang2024ufo}. These choices create non-obvious trade-offs in robustness, portability, latency, and error recovery. To address this, we organize the field with a \textbf{tri-layer architectural taxonomy}---\emph{Perception, Decision, and Execution}---capturing the end-to-end dataflow from pixels to instantiated actions.
+\textbf{First, architectural heterogeneity} makes it difficult to compare approaches: some agents rely on DOM/accessibility trees for state~\cite{deng2023mind2web,zhou2024webarena}, others operate purely from pixels~\cite{lu2024omniparser,hong2024cogagent}, and still others hybridize structural priors with vision~\cite{baechler2024screenai}. Likewise, decision modules vary from single-pass action prediction to memory-augmented, reflective, and multi-agent planners~\cite{xie2024osworld,zhang2024ufo}. These choices create non-obvious trade-offs in robustness, portability, latency, and error recovery. To address this, we organize the field with a \textbf{tri-layer architectural taxonomy}---\emph{Perception, Decision, and Execution}---capturing the end-to-end dataflow from pixels to instantiated actions.
 
-\textbf{Second, CUAs introduce qualitatively new safety and governance risks} compared with dialogue-only LLMs: because agents can \emph{act} (e.g., clicking ``confirm purchase,'' changing system settings, running commands), errors are potentially irreversible, and recent safety benchmarks show that harmful behaviors (misuse, prompt injection, unsafe action selection) remain open problems for GUI-capable systems~\cite{OSHarm2025,SafeArena2025,liu2025wainjectbench}.
+\textbf{Second, CUAs introduce qualitatively new safety and governance risks} compared with dialogue-only LLMs: because agents can \emph{act} (e.g., clicking ``confirm purchase,'' changing system settings, running commands), errors are potentially irreversible, and recent safety benchmarks show that harmful behaviors (misuse, prompt injection, unsafe action selection) remain open problems for GUI-capable systems~\cite{OSHarm2025,kumar2025safearena,liu2025wainjectbench}.
 
 In this paper, we present a \textbf{lifecycle-oriented synthesis} that connects architecture to real deployment constraints and to security/governance requirements. Specifically, we make three contributions:
 \begin{itemize}
   \item \textbf{Architecture taxonomy.} We decompose CUAs into Perception, Decision, and Execution layers, enabling modular comparison across state representations, planning mechanisms, and action spaces, and making model-level trade-offs explicit.
   \item \textbf{Lifecycle taxonomy.} We organize engineering and research challenges into a four-stage lifecycle---\emph{Creation, Deployment, Execution, and Maintenance}---so capabilities and risks can be mapped to where they originate and how failures propagate over time.
-  \item \textbf{Security \& governance lens.} We ground risk analysis in threat modeling and an attribution framework distinguishing \emph{curiosity}-driven deviations from \emph{malice} induced by adversarial content, separating model-internal factors from environment/UI deception cases to guide defense and governance mechanism selection~\cite{raza2026agenticsecurity,SafeArena2025}.
+\item \textbf{Security \& governance lens.} We ground risk analysis in threat modeling and an attribution framework distinguishing \emph{curiosity}-driven deviations from \emph{malice} induced by adversarial content, separating model-internal factors from environment/UI deception cases to guide defense and governance mechanism selection~\cite{raza2026agenticsecurity,kumar2025safearena}.
 \end{itemize}
 
 Taken together, our goal is not only to summarize representative systems and benchmarks, but to provide an integrative map that links (i) \emph{how} CUAs are built, (ii) \emph{where} they fail in practice, and (iii) \emph{what} governance mechanisms are necessary as agents operate at scale in open ecosystems.
