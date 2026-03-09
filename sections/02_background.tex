@@ -10,7 +10,7 @@ In realistic settings, the interaction is \textbf{partially observable} and \tex
 This differs from classical embodied control in two ways:
 \begin{itemize}
   \item GUIs are semantically dense---small visual elements (icons, toggles) can represent high-impact operations.
-  \item The environment is often \textbf{adversarial or untrusted}: web content, documents, and tool outputs can embed instructions intended to override user intent (prompt injection), motivating explicit trust boundaries in agent design~\cite{liu2025wainjectbench,AegisProtocol2025}.
+  \item The environment is often \textbf{adversarial or untrusted}: web content, documents, and tool outputs can embed instructions intended to override user intent (prompt injection), motivating explicit trust boundaries in agent design~\cite{liu2025wainjectbench,robison2025aegis}.
 \end{itemize}
 
 \subsection{Environment Modalities and State Representations}
@@ -34,5 +34,5 @@ Accordingly, we adopt a four-stage lifecycle taxonomy---\emph{Creation, Deployme
 
 \subsection{Security and Governance Preliminaries: Attribution and Trust Boundaries}
 To discuss safety in CUAs, we require an attribution lens that distinguishes \emph{why} unsafe behavior occurs.
-We build on a threat-modeling view and distinguish curiosity-driven overreach from malice induced by adversarial content, while also recognizing environment-driven harms (e.g., UI deception) that do not require model intent~\cite{raza2026agenticsecurity,kumar2025safearena,OSHarm2025}.
-Empirically, safety benchmarks such as OS-Harm and SafeArena highlight that dialogue-level alignment does not automatically transfer to action-level safety for web/OS agents~\cite{OSHarm2025,kumar2025safearena}.
+We build on a threat-modeling view and distinguish curiosity-driven overreach from malice induced by adversarial content, while also recognizing environment-driven harms (e.g., UI deception) that do not require model intent~\cite{raza2026agenticsecurity,kumar2025safearena,kuntz2025harm}.
+Empirically, safety benchmarks such as OS-Harm and SafeArena highlight that dialogue-level alignment does not automatically transfer to action-level safety for web/OS agents~\cite{kuntz2025harm,kumar2025safearena}.
