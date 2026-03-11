@@ -1,6 +1,9 @@
 \section{Introduction}
 \label{sec:intro}
-The rapid progress of multimodal large language models (MLLMs) has moved agentic systems beyond text-only tool use toward \emph{direct interaction with graphical user interfaces (GUIs)}. In this paradigm, \textbf{Computer-Use Agents (CUAs)} perceive screens, reason over user goals, and execute mouse/keyboard/touch or programmatic actions. This action capability raises the stakes: failures are no longer only wrong text outputs, but can trigger irreversible outcomes such as payments, deletions, or system reconfiguration. Recent work shows this shift from controlled web benchmarks (Mind2Web, WebArena) to open, real-computer settings (OSWorld), where agents handle unfamiliar applications and long-horizon cross-app procedures~\cite{deng2023mind2web,zhou2024webarena,xie2024osworld}.
+
+The rapid rise of \emph{agentic AI} has begun to shift large language models from passive responders into systems that can \emph{perceive}, \emph{reason}, and \emph{act} to complete complex tasks in interactive environments. This shift is enabled not only by stronger language modeling, but also by multimodal perception, tool and code execution interfaces, and increasingly realistic evaluation environments. A prominent instantiation of this trend is \textbf{Computer-Use Agents (CUAs)}: agents that close the loop between observing a computer environment (e.g., web pages, desktop operating systems, mobile apps) and taking environment-grounded actions. In practice, CUAs often operate through a \emph{hybrid action interface}---combining GUI interactions (clicking, typing, scrolling) with programmatic operations such as API calls or command execution---to accomplish end-to-end user goals.
+
+Compared with dialogue-only assistants, CUAs substantially expand the real-world impact surface of AI systems. Model errors or misalignment no longer remain confined to incorrect text, but can translate into concrete side effects such as unintended purchases, data deletion, permission changes, or unsafe command execution. Accordingly, recent work has moved from controlled and reproducible web benchmarks (Mind2Web, WebArena) to more open-ended, real-computer settings (OSWorld), where agents must handle unfamiliar applications, non-stationary interfaces, and long-horizon cross-application procedures~\cite{deng2023mind2web,zhou2023webarena,xie2024osworld}.
 
 \begin{table*}[t]
 \centering
@@ -13,30 +16,30 @@ The rapid progress of multimodal large language models (MLLMs) has moved agentic
 \textbf{Arch.} & \textbf{Lifecycle} & \textbf{Safety} & \textbf{Govern.} &
 \textbf{Diff. (keywords)} \\
 \midrule
-Nguyen et al.~\cite{nguyen2024guiagentsurvey} & GUI agents survey &
+Nguyen et al.~\cite{nguyen2025gui} & GUI agents survey &
 \checkmark & $\sim$ & $\sim$ & -- &
 scope focus: systems and benchmarks \\
-Hu et al.~\cite{hu-etal-2025-os} & Computer/Phone/OS agents survey &
+Hu et al.~\cite{hu2025agents} & Computer/Phone/Browser agents survey &
 \checkmark & $\sim$ & -- & $\sim$ &
 scope focus: app ecosystems \\
-Tang et al.~\cite{tang2025guisurvey} & GUI agents survey (resources) &
+Tang et al.~\cite{tang2025survey} & GUI agents survey (resources) &
 $\sim$ & -- & -- & -- &
 scope focus: resource curation \\
 \midrule
 OS-Harm~\cite{kuntz2025harm} & OS/Computer-use safety benchmark &
 -- & -- & \checkmark & -- &
 scope focus: benchmark evaluation \\
-SafeArena~\cite{kumar2025safearena} & Web-agent misuse benchmark &
+SafeArena~\cite{tur2025safearena} & Web-agent misuse benchmark &
 -- & -- & \checkmark & -- &
 scope focus: misuse evaluation \\
 WAInjectBench~\cite{liu2025wainjectbench} & Prompt-injection benchmark &
 -- & -- & \checkmark & -- &
 scope focus: injection evaluation \\
 \midrule
-Raza et al.~\cite{raza2026agenticsecurity} & Agentic AI security survey (broad) &
+Lazer et al.~\cite{lazer2026survey} & Agentic AI security survey (broad) &
 -- & -- & \checkmark & \checkmark &
 scope focus: broad agent security \\
-Aegis Protocol~\cite{robison2025aegis} & Open agent security framework &
+Aegis Protocol~\cite{adapala2025aegis} & Open agent security framework &
 -- & -- & \checkmark & \checkmark &
 scope focus: security protocols \\
 \midrule
@@ -48,16 +51,17 @@ scope focus: security protocols \\
 }
 \end{table*}
 
-Despite fast capability gains, the CUA ecosystem faces two structural bottlenecks that motivate this survey.
-\textbf{First, architectural heterogeneity} makes it difficult to compare approaches: some agents rely on DOM/accessibility trees for state~\cite{deng2023mind2web,zhou2024webarena}, others operate purely from pixels~\cite{lu2024omniparser,hong2024cogagent}, and still others hybridize structural priors with vision~\cite{baechler2024screenai}. Likewise, decision modules vary from single-pass action prediction to memory-augmented, reflective, and multi-agent planners~\cite{xie2024osworld,zhang2024ufo}. These choices create non-obvious trade-offs in robustness, portability, latency, and error recovery. To address this, we organize the field with a \textbf{tri-layer architectural taxonomy}---\emph{Perception, Decision, and Execution}---capturing the end-to-end dataflow from pixels to instantiated actions.
+Despite rapid capability gains, the CUA ecosystem remains fragmented across architectural design, evaluation environments, and safety analysis, motivating a more systematic understanding of this emerging landscape.
 
-\textbf{Second, CUAs introduce qualitatively new safety and governance risks} compared with dialogue-only LLMs: because agents can \emph{act} (e.g., clicking ``confirm purchase,'' changing system settings, running commands), errors are potentially irreversible, and recent safety benchmarks show that harmful behaviors (misuse, prompt injection, unsafe action selection) remain open problems for GUI-capable systems~\cite{kuntz2025harm,kumar2025safearena,liu2025wainjectbench}.
+\textbf{First, architectural heterogeneity} makes it difficult to compare and reason about existing approaches. Some agents rely on DOM or accessibility trees for structured state representations~\cite{deng2023mind2web,zhou2023webarena}, others operate purely from pixels~\cite{lu2024omniparser, hong2024cogagent}, while hybrid systems combine visual grounding with structural priors~\cite{baechler2024screenai}. Decision modules further vary from single-step action prediction to memory-augmented reasoning, reflection loops, and multi-agent planning~\cite{xie2024osworld,zhang2025ufo}. These choices introduce non-obvious trade-offs in portability, robustness, latency, and error recovery, and they interact differently with deployment constraints and runtime failures.
 
-In this paper, we present a \textbf{lifecycle-oriented synthesis} that connects architecture to real deployment constraints and to security/governance requirements. Specifically, we make three contributions:
+\textbf{Second, CUAs introduce qualitatively new safety and governance challenges} compared with dialogue-only LLM systems. Because CUAs can directly manipulate interfaces and invoke high-impact operations, they expose new attack surfaces and failure modes, including indirect prompt injection through untrusted content, interface deception that misleads perception, and privilege or tool misuse during multi-step task execution. Recent safety benchmarks indicate that misuse, prompt injection, and unsafe action selection remain open problems for GUI-capable agents~\cite{kuntz2025harm,tur2025safearena,liu2025wainjectbench}. As CUAs become more autonomous and operate over longer horizons, traditional static safety assumptions and governance practices are increasingly strained, calling for lifecycle-aware analysis and system-level controls~\cite{lazer2026survey,adapala2025aegis}.
+
+To address these challenges, we present a \textbf{lifecycle-oriented synthesis of the CUA ecosystem} that connects architectural design, operational risks, and governance mechanisms. Specifically, we make three contributions:
 \begin{itemize}
-  \item \textbf{Architecture taxonomy.} We decompose CUAs into Perception, Decision, and Execution layers, enabling modular comparison across state representations, planning mechanisms, and action spaces, and making model-level trade-offs explicit.
-  \item \textbf{Lifecycle taxonomy.} We organize engineering and research challenges into a four-stage lifecycle---\emph{Creation, Deployment, Execution, and Maintenance}---so capabilities and risks can be mapped to where they originate and how failures propagate over time.
-\item \textbf{Security \& governance lens.} We ground risk analysis in threat modeling and an attribution framework distinguishing \emph{curiosity}-driven deviations from \emph{malice} induced by adversarial content, separating model-internal factors from environment/UI deception cases to guide defense and governance mechanism selection~\cite{raza2026agenticsecurity,kumar2025safearena}.
+  \item \textbf{Integrated architecture--lifecycle analysis.} We analyze the design space of computer-use agents through a perception--decision--execution pipeline and connect it with a four-stage lifecycle spanning \emph{Creation, Deployment, Execution, and Maintenance}. This integrated perspective clarifies how architectural choices shape capabilities, robustness, and failure modes across system stages.
+  \item \textbf{Security threat modeling for computer-use agents.} We \emph{introduce} a lifecycle-oriented threat modeling perspective for CUA systems, characterizing emerging attack surfaces such as prompt injection, interface deception, tool misuse, and memory poisoning, and analyzing how these risks arise from both model behavior and adversarial environments.
+  \item \textbf{Governance mechanisms for the CUA ecosystem.} We discuss governance strategies for deploying computer-use agents in open computing environments, including benchmarking and evaluation frameworks, auditing and provenance mechanisms, permission and sandboxing controls, and accountability across stakeholders.
 \end{itemize}
 
-Taken together, our goal is not only to summarize representative systems and benchmarks, but to provide an integrative map that links (i) \emph{how} CUAs are built, (ii) \emph{where} they fail in practice, and (iii) \emph{what} governance mechanisms are necessary as agents operate at scale in open ecosystems.
+Taken together, our goal is not only to summarize representative systems and benchmarks, but to provide an integrative map that connects \emph{how} CUAs are built, \emph{where} they fail in practice, and \emph{what} governance mechanisms are required as agents operate at scale in open ecosystems.
