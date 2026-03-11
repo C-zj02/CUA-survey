@@ -1,38 +1,25 @@
 \section{Background}
 \label{sec:background}
 
-This section introduces preliminaries required to reason about CUAs in a unified manner. We formalize the CUA interaction loop, clarify environment assumptions, and motivate why architectural and lifecycle views are both necessary.
+This section introduces the technical preliminaries needed to reason about computer-use agents (CUAs) in a unified way. We first formalize GUI interaction as a partially observable control problem, then summarize the main environment modalities and action interfaces that shape agent behavior in web, desktop, and mobile settings.
 
 \subsection{Problem Formulation: GUI Interaction as Partially Observable Control}
-A CUA operates over a GUI-driven environment $\mathcal{E}$ (web page, desktop OS, mobile app) under a user instruction $g$ expressed in natural language. At step $t$, the agent receives an observation $o_t$ (e.g., screenshot pixels, DOM/A11y tree, or a hybrid representation) and produces an action $a_t$ drawn from an action space $\mathcal{A}$ (mouse/keyboard/touch events, API calls, code execution, or macro-actions). The environment transitions and returns a new observation.
-In realistic settings, the interaction is \textbf{partially observable} and \textbf{non-stationary}: interface states can change due to asynchronous events (pop-ups, ads, network updates)~\cite{zhou2023webarena,he2024webvoyager}, while the agent's observation may omit latent states (hidden UI layers, permission dialogs, or system-level context)~\cite{xie2024osworld}.
+A CUA operates in a GUI-driven environment $\mathcal{E}$, such as a web page, desktop operating system, or mobile application, under a user instruction $g$ expressed in natural language. At step $t$, the agent receives an observation $o_t$---for example, screenshot pixels, a DOM/accessibility tree, or a hybrid representation---and produces an action $a_t$ from an action space $\mathcal{A}$, such as mouse, keyboard, or touch events, API invocations, code execution, or macro-actions. The environment then transitions to a new state and returns a subsequent observation.
 
-This differs from classical embodied control in two ways:
-\begin{itemize}
-  \item GUIs are semantically dense---small visual elements (icons, toggles) can represent high-impact operations.
-  \item The environment is often \textbf{adversarial or untrusted}: web content, documents, and tool outputs can embed instructions intended to override user intent (prompt injection), motivating explicit trust boundaries in agent design~\cite{liu2025wainjectbench,adapala2025aegis}.
-\end{itemize}
+In realistic settings, this interaction is naturally \textbf{partially observable} and often \textbf{non-stationary}. Interface states may change due to asynchronous events such as pop-ups, advertisements, background refreshes, or network updates~\cite{zhou2023webarena,he2024webvoyager}. At the same time, the agent's observation may omit latent but decision-relevant state, including hidden UI layers, permission prompts, or system-level context~\cite{xie2024osworld}.
+
+Compared with classical embodied control, GUI-based interaction has two distinctive properties. First, graphical interfaces are semantically dense: small visual elements such as icons, toggles, and menu entries may correspond to high-impact operations. Second, the environment may contain \emph{untrusted or externally controlled content}. Web pages, documents, and tool outputs can introduce instructions or signals that conflict with the user's objective, which makes trust boundaries and mediation mechanisms central to agent design~\cite{liu2025wainjectbench,adapala2025aegis}. This formulation motivates the architectural decomposition discussed later in the paper.
 
 \subsection{Environment Modalities and State Representations}
-A central design axis is how state is represented for reasoning and grounding.
-In web settings, DOM trees and accessibility metadata provide structured, machine-readable UI descriptions; this supports deterministic element selection but can be fragile across platforms and fails in rendering-heavy or remote/virtual environments~\cite{zhou2023webarena}.
-Conversely, pixel-based perception treats GUI interaction as a vision-language grounding problem, enabling platform-agnostic deployment at the cost of localization errors and sensitivity to resolution, scaling, and visual perturbations.
-Hybrid representations combine vision with structural priors (OCR, layout graphs, hierarchical parsing), seeking robust grounding without full dependency on system APIs.
+A central design axis for CUAs is how the environment state is represented for reasoning and grounding.
 
-From a benchmarking perspective, Mind2Web targets generalist web instruction following on diverse websites~\cite{deng2023mind2web}, WebArena provides realistic and reproducible web environments~\cite{zhou2023webarena}, and OSWorld evaluates open-ended tasks in real computer environments spanning arbitrary applications~\cite{xie2024osworld}. These benchmarks collectively motivate a unified taxonomy for comparing agents operating under different observation channels.
+In web settings, DOM trees and accessibility metadata provide structured and machine-readable descriptions of interface elements. Such representations support deterministic element selection and programmatic control, but they can be brittle across platforms and are less effective in rendering-heavy, remote, or virtualized environments~\cite{zhou2023webarena}. By contrast, pixel-based perception treats GUI interaction as a vision-language grounding problem. This improves platform generality, but it also introduces sensitivity to localization errors, screen resolution, scaling, and visual perturbations. Hybrid approaches combine visual perception with structural priors such as OCR, layout graphs, or hierarchical parsing, aiming to improve grounding robustness without relying fully on system APIs.
+
+These representation choices directly influence both capability and failure behavior. Structured state tends to favor precise element selection, while perceptual state tends to favor broader deployment coverage. For this reason, benchmark design has also diversified across observation channels. Mind2Web targets generalist web instruction following over diverse websites~\cite{deng2023mind2web}, WebArena provides realistic and reproducible web environments~\cite{zhou2023webarena}, and OSWorld evaluates open-ended tasks in real computer environments spanning arbitrary applications~\cite{xie2024osworld}. Together, these benchmarks motivate a unified view of CUAs across heterogeneous interface modalities.
 
 \subsection{Action Spaces and Execution Interfaces}
-The \textbf{action space} determines not only capability but also the safety surface area.
-Low-level atomic actions (click, drag, type) are maximally general but error-prone: small coordinate offsets can cause misclicks, and delayed execution can lead to time-of-check/time-of-use mismatches.
-Higher-level actions (API invocation, code-as-action, macro-actions) improve efficiency and auditability but introduce new risks, including over-privilege and tool misuse.
-Modern systems increasingly mix action modalities, combining GUI actions with programmatic execution to accelerate workflows.
+The \textbf{action space} of a CUA shapes both what the agent can accomplish and how failures manifest in practice.
 
-\subsection{Why Both Architecture and Lifecycle Views Matter}
-A purely component-wise taxonomy is insufficient because many failure modes are \textbf{stage-dependent}.
-Training-time data and objectives constrain what the agent can perceive (\emph{Creation}), deployment integrations determine what it is allowed to access (\emph{Deployment}), long-horizon execution triggers compounding errors and injection attacks (\emph{Execution}), and updates plus ecosystem interactions drive regression and propagation risk (\emph{Maintenance}).
-Accordingly, we adopt a four-stage lifecycle taxonomy---\emph{Creation, Deployment, Execution, and Maintenance}---to align engineering choices with where vulnerabilities originate and how they persist.
+Low-level atomic actions such as clicking, dragging, scrolling, and typing are highly general, since they can be applied to a wide range of interfaces. However, they are also prone to execution errors: small coordinate offsets may cause misclicks, and delayed execution may introduce time-of-check/time-of-use mismatches when the interface changes between decision and action. Higher-level actions, including API invocations, code-as-action, and reusable macro-actions, can improve efficiency, abstraction, and auditability. At the same time, they may introduce different risks, such as excessive privilege, unsafe tool invocation, or error amplification through automation.
 
-\subsection{Security and Governance Preliminaries: Attribution and Trust Boundaries}
-To discuss safety in CUAs, we require an attribution lens that distinguishes \emph{why} unsafe behavior occurs.
-We build on a threat-modeling view and distinguish curiosity-driven overreach from malice induced by adversarial content, while also recognizing environment-driven harms (e.g., UI deception) that do not require model intent~\cite{lazer2026survey,tur2025safearena,kuntz2025harm}.
-Empirically, safety benchmarks such as OS-Harm and SafeArena highlight that dialogue-level alignment does not automatically transfer to action-level safety for web/OS agents~\cite{kuntz2025harm,tur2025safearena}.
+Modern CUA systems increasingly combine multiple action interfaces rather than relying on a single modality. This design choice expands the operational envelope of the agent, but it also broadens the space of possible failure modes. Accordingly, action abstractions should be understood not only as a capability choice, but also as a factor that shapes the system's safety and control surface.
