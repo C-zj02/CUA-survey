@@ -8,8 +8,9 @@ This section provides a comprehensive analysis of security and privacy risks in 
 \small
 \caption{Threat taxonomy by lifecycle stage and attribution (C: curious, M: malicious, E: environmental). Abbreviations: PoT, Plan-of-Thought; MCP, Model Context Protocol; TOCTOU, time-of-check to time-of-use; IPI, Indirect Prompt Injection; EIA, Environmental Injection Attack; RAG, Retrieval-Augmented Generation; PII, personally identifiable information.}
 \label{tab:cua_threats}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llll}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabularx}{\textwidth}{l l l >{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Stage} & \textbf{Threat Type} & \textbf{Attribution} & \textbf{Representative Work} \\
 \midrule
@@ -25,7 +26,7 @@ Execution & Curiosity-driven overreach, PII leakage & C or M & AgentDAM~\cite{zh
 Execution & Agent-to-agent propagation & C or M & Chen~\cite{chen2026openclaw}, Prompt Infection~\cite{lee2024prompt} \\
 Maintenance & Governance gaps & E & Aegis~\cite{adapala2025aegis}, Agentic AI Survey~\cite{lazer2026survey} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table*}
 
 \subsection{Threat Model}
