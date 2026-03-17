@@ -1,11 +1,11 @@
 \section{Introduction}
 \label{sec:intro}
 
-The rapid rise of \emph{agentic AI} has begun to shift large language models from passive responders into systems that can \emph{perceive}, \emph{reason}, and \emph{act} to complete complex tasks in interactive environments. This shift is enabled not only by stronger language modeling, but also by multimodal perception, tool and code execution interfaces, and increasingly realistic evaluation environments. A prominent instantiation of this trend is \textbf{Computer-Use Agents (CUAs)}: agents that close the loop between observing a computer environment (e.g., web pages, desktop operating systems, mobile apps) and taking environment-grounded actions. In practice, CUAs often operate through a \emph{hybrid action interface}---combining GUI interactions (clicking, typing, scrolling) with programmatic operations such as API calls or command execution---to accomplish end-to-end user goals.
+The recent rise of \emph{agentic AI} is transforming large language models from passive responders into systems that can \emph{perceive}, \emph{reason}, and \emph{act} in interactive environments. This transition is driven not only by advances in language modeling, but also by multimodal perception, tool-use interfaces, code execution, and increasingly realistic interactive benchmarks. A prominent manifestation of this trend is \textbf{Computer-Use Agents (CUAs)}: agents that observe and manipulate computer environments such as web pages, desktop operating systems, and mobile applications in order to accomplish user-specified goals. In practice, CUAs often operate through \emph{hybrid action interfaces} that combine GUI-level interactions (e.g., clicking, typing, scrolling) with programmatic operations such as API calls, scripting, or command execution.
 
-Compared with dialogue-only assistants, CUAs substantially expand the real-world impact surface of AI systems. Model errors or misalignment no longer remain confined to incorrect text, but can translate into concrete side effects such as unintended purchases, data deletion, permission changes, or unsafe command execution. Accordingly, recent work has moved from controlled and reproducible web benchmarks (Mind2Web, WebArena) to more open-ended, real-computer settings (OSWorld), where agents must handle unfamiliar applications, non-stationary interfaces, and long-horizon cross-application procedures~\cite{deng2023mind2web,zhou2023webarena,xie2024osworld}. This transition is increasingly visible not only in research environments, but also in open deployments such as \textbf{OpenClaw}, which expose computer-use capabilities directly to end users through persistent, chat-mediated, and extensible agent systems~\cite{openclaw2026website,ibm2026openclaw}.
+Compared with dialogue-only assistants, CUAs substantially enlarge the real-world impact surface of AI systems. Their outputs are no longer confined to text generation, but may directly trigger side effects in external environments, including unintended purchases, data deletion, permission changes, unsafe tool invocation, or persistent system misconfiguration. Reflecting this shift, recent research has moved from structured and reproducible web benchmarks such as Mind2Web and WebArena to more open-ended computer-use settings such as OSWorld, where agents must cope with unfamiliar interfaces, non-stationary visual layouts, long-horizon tasks, and cross-application dependencies~\cite{deng2023mind2web,zhou2023webarena,xie2024osworld}. At the same time, these capabilities are beginning to appear in open deployment settings, suggesting that computer-use is becoming not only a benchmark problem, but also a systems, safety, and governance problem.
 
-OpenClaw is analytically useful for motivating this survey because it sits at the boundary between experimental CUA research and real-world deployment. Public descriptions present it not merely as a GUI automation model, but as a personal AI assistant that runs on users' own devices, connects to everyday communication surfaces such as WhatsApp, Telegram, Slack, Discord, and iMessage, and remains continuously available through a local-first control layer~\cite{openclaw2026website}. In other words, systems such as OpenClaw make CUA capabilities tangible outside laboratory benchmarks: they turn perception, planning, tool use, and interface control into an always-on deployment problem, where convenience, autonomy, and attack surface expand together.
+This transition exposes a central challenge for the field: although CUA capabilities are advancing rapidly, the research landscape remains fragmented across \emph{architectural design}, \emph{evaluation environments}, \emph{deployment practice}, and \emph{safety analysis}. Existing studies and surveys have provided valuable perspectives on GUI agents, OS agents, and multimodal agent ecosystems, while safety-oriented work has examined misuse, prompt injection, and harmful action benchmarks~\cite{nguyen2025gui,hu2025agents,tang2025survey,kuntz2025harm,tur2025safearena,liu2025wainjectbench}. However, these lines of work are often treated separately. As a result, the field still lacks a unified account of how CUAs are built, how architectural choices interact with real deployment constraints, where failures emerge over the lifecycle of a system, and what governance mechanisms are needed once such agents operate beyond controlled benchmarks.
 
 \begin{table*}[t]
 \centering
@@ -20,50 +20,49 @@ OpenClaw is analytically useful for motivating this survey because it sits at th
 \midrule
 GUI Agents Survey~\cite{nguyen2025gui} & GUI agents survey &
 \checkmark & $\sim$ & $\sim$ & -- &
-scope focus: systems and benchmarks \\
+systems and benchmarks \\
 OS Agents~\cite{hu2025agents} & Computer/Phone/Browser agents survey &
 \checkmark & $\sim$ & -- & $\sim$ &
-scope focus: app ecosystems \\
+app ecosystems \\
 MLLM-GUI Survey~\cite{tang2025survey} & GUI agents survey (resources) &
 $\sim$ & -- & -- & -- &
-scope focus: resource curation \\
+resource curation \\
 \midrule
 OS-Harm~\cite{kuntz2025harm} & OS/Computer-use safety benchmark &
 -- & -- & \checkmark & -- &
-scope focus: benchmark evaluation \\
+benchmark evaluation \\
 SafeArena~\cite{tur2025safearena} & Web-agent misuse benchmark &
 -- & -- & \checkmark & -- &
-scope focus: misuse evaluation \\
+misuse evaluation \\
 WAInjectBench~\cite{liu2025wainjectbench} & Prompt-injection benchmark &
 -- & -- & \checkmark & -- &
-scope focus: injection evaluation \\
+injection evaluation \\
 \midrule
 Agentic AI Security Survey~\cite{lazer2026survey} & Agentic AI security survey (broad) &
 -- & -- & \checkmark & \checkmark &
-scope focus: broad agent security \\
+ broad agent security \\
 Aegis Protocol~\cite{adapala2025aegis} & Open agent security framework &
 -- & -- & \checkmark & \checkmark &
-scope focus: security protocols \\
+ security protocols \\
 \midrule
-\textbf{Ours} & CUA ecosystem (GUI/OS/Web), motivated by real-world deployments such as OpenClaw &
+\textbf{Ours} & CUA ecosystem (GUI/OS/Web) &
 \checkmark & \checkmark & \checkmark & \checkmark &
-\textbf{scope focus: integrated architecture/lifecycle/governance} \\
+\textbf{integrated architecture/lifecycle/governance} \\
 \bottomrule
 \end{tabular}
 }
 \end{table*}
 
-Despite rapid capability gains, the CUA ecosystem remains fragmented across architectural design, evaluation environments, deployment practice, and safety analysis, motivating a more systematic understanding of this emerging landscape. Open deployments such as OpenClaw make this fragmentation more visible: once a CUA is exposed through messaging channels, persistent context, plugin or tool invocation, and system-level execution interfaces, deployment is no longer a thin wrapper around a model, but a security-critical binding layer between user intent and real-world action~\cite{openclaw2026website,ibm2026openclaw}.
+In this survey, we focus on \textbf{general-purpose computer-use agents} that interact with GUI, OS, and web environments through multimodal perception and environment-grounded action. Our emphasis is not limited to benchmark performance; instead, we examine CUAs as end-to-end systems whose behavior emerges from the interaction among perception, reasoning, action interfaces, execution authority, and operational context. We do not aim to comprehensively cover dialogue-only LLM agents, traditional rule-based robotic process automation, or embodied robotic agents, except where they directly inform the design or governance of CUAs.
 
-\textbf{First, architectural heterogeneity} makes it difficult to compare and reason about existing approaches. Some agents rely on DOM or accessibility trees for structured state representations~\cite{deng2023mind2web,zhou2023webarena}, others operate purely from pixels~\cite{lu2024omniparser,hong2024cogagent}, while hybrid systems combine visual grounding with structural priors~\cite{baechler2024screenai}. Decision modules further vary from single-step action prediction to memory-augmented reasoning, reflection loops, and multi-agent planning~\cite{xie2024osworld,zhang2025ufo}. These choices introduce non-obvious trade-offs in portability, robustness, latency, and error recovery, and they interact differently with deployment constraints and runtime failures. In real-world systems such as OpenClaw, these trade-offs become even sharper because architectural decisions must also mediate persistent memory, multi-channel interaction, execution authority, and extensible skills within a continuously running agent stack~\cite{openclaw2026website}.
+A useful motivating example for this transition is \textbf{OpenClaw}, which illustrates how CUA-like capabilities are moving toward persistent, user-facing deployment. Public descriptions portray OpenClaw not merely as a benchmarked GUI automation model, but as a personal AI assistant operating on user devices, connected to communication channels such as WhatsApp, Telegram, Slack, Discord, and iMessage through an extensible and local-first control stack~\cite{openclaw2026website,ibm2026openclaw}. We use OpenClaw in this paper as a \emph{deployment exemplar} rather than a central object of evaluation: it helps highlight why always-on access, persistent memory, cross-channel interaction, and execution authority make computer-use agents qualitatively different from benchmark-only systems.
 
-\textbf{Second, CUAs introduce qualitatively new safety and governance challenges} compared with dialogue-only LLM systems. Because CUAs can directly manipulate interfaces and invoke high-impact operations, they expose new attack surfaces and failure modes, including indirect prompt injection through untrusted content, interface deception that misleads perception, and privilege or tool misuse during multi-step task execution. Recent safety benchmarks indicate that misuse, prompt injection, and unsafe action selection remain open problems for GUI-capable agents~\cite{kuntz2025harm,tur2025safearena,liu2025wainjectbench}. These concerns become especially salient in open deployment cases such as OpenClaw, where broad execution authority, persistent interaction surfaces, and non-sandboxed extension mechanisms increase both utility and exposure~\cite{openclaw2026website,ibm2026openclaw}. As CUAs become more autonomous and operate over longer horizons, traditional static safety assumptions and governance practices are increasingly strained, calling for lifecycle-aware analysis and system-level controls~\cite{lazer2026survey,adapala2025aegis}.
+Motivated by this gap between benchmark-centered progress and deployment-facing complexity, we present a \textbf{lifecycle-oriented synthesis of the CUA ecosystem}. Our central claim is that CUAs are best understood not only through their task performance, but through the interaction between \emph{architectural choices}, \emph{system lifecycle}, and \emph{risk and governance surfaces}. Specifically, we make three contributions:
 
-To address these challenges, we present a \textbf{lifecycle-oriented synthesis of the CUA ecosystem} that connects architectural design, operational risks, and governance mechanisms. Although our analysis targets the broader CUA landscape rather than any single system, we use OpenClaw as a representative deployment case that helps ground the transition from benchmark-centered evaluation to always-on, real-user agent operation. Specifically, we make three contributions:
 \begin{itemize}
-  \item \textbf{Integrated architecture--lifecycle analysis.} We analyze the design space of computer-use agents through a perception--decision--execution pipeline and connect it with a four-stage lifecycle spanning \emph{Creation, Deployment, Execution, and Maintenance}. This integrated perspective clarifies how architectural choices shape capabilities, robustness, and failure modes across system stages.
-  \item \textbf{Security threat modeling for computer-use agents.} We introduce a lifecycle-oriented threat modeling perspective for CUA systems, characterizing emerging attack surfaces such as prompt injection, interface deception, tool misuse, memory poisoning, and extension-layer compromise, and analyzing how these risks arise from both model behavior and adversarial environments.
-  \item \textbf{Governance mechanisms for the CUA ecosystem.} We discuss governance strategies for deploying computer-use agents in open computing environments, including benchmarking and evaluation frameworks, auditing and provenance mechanisms, permission and sandboxing controls, and accountability across stakeholders.
+  \item \textbf{Integrated architecture--lifecycle synthesis.} We organize the design space of computer-use agents using a unified \emph{Perception--Decision--Execution} architecture, and connect it to a four-stage lifecycle spanning \emph{Creation, Deployment, Execution, and Maintenance}. This synthesis clarifies how design choices shape capability, robustness, and failure modes across system stages.
+  \item \textbf{Security and risk analysis for CUAs.} We systematize the security landscape of computer-use agents through a lifecycle-aware threat model covering prompt injection, interface deception, tool and privilege misuse, memory compromise, and extension-layer or supply-chain failures, and relate these risks to concrete triggering conditions and control points.
+  \item \textbf{Governance framing for open computer-use ecosystems.} We outline governance mechanisms for the deployment of CUAs in realistic computing environments, including evaluation and benchmarking, auditing and provenance, permission and sandboxing controls, and accountability across stakeholders.
 \end{itemize}
 
-Taken together, our goal is not only to summarize representative systems and benchmarks, but to provide an integrative map that connects \emph{how} CUAs are built, \emph{where} they fail in practice, and \emph{what} governance mechanisms are required as agents operate at scale in open ecosystems.
+Taken together, this survey aims to provide an integrative map of the CUA field: not only \emph{how} computer-use agents are built, but also \emph{how} they are deployed, \emph{where} they fail, and \emph{what} technical and governance mechanisms are needed for trustworthy operation at scale.
