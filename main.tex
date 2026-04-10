@@ -21,27 +21,22 @@
 
 \begin{document}
 
-\title{The Devils Behind OpenClaw: A Survey of Safety, Security, and Governance in Computer-Use Agents}
+\title{From OpenClaw to Computer-Use Agents: Architecture, Lifecycle, Security Risks, and Governance}
 
 \author{
-\IEEEauthorblockN{
-Zejian Chen,
-Zhanyuan Liu,
-Xi Zhang$^{*}$\thanks{*Corresponding author.},
-Zhaozhuo Li,
-Litian~Zhang,
-and Mengxiang Han
-}
-\IEEEauthorblockA{
-Beijing University of Posts and Telecommunications, Beijing, China \\
-Email: \{chenzejian, doubao, zhangx, lichaozhuo, zhanglitian\}@bupt.edu.cn, hanmx12@chinaunicom.cn
-}
+\IEEEauthorblockN{Zejian Chen\IEEEauthorrefmark{1}, Zhanyuan Liu\IEEEauthorrefmark{1}, Chaozhuo Li\IEEEauthorrefmark{1}, Mengxiang Han\IEEEauthorrefmark{2}, Litian Zhang\IEEEauthorrefmark{1}, Feng Gao\IEEEauthorrefmark{2}, Yiming Hei\IEEEauthorrefmark{3}, Xi Zhang\IEEEauthorrefmark{1}\thanks{Corresponding author: Xi Zhang (zhangx@bupt.edu.cn).}}
+\IEEEauthorblockA{\IEEEauthorrefmark{1}Beijing University of Posts and Telecommunications, Beijing, China \\
+Emails: \{chenzejian, doubao, lichaozhuo, zhanglitian, zhangx\}@bupt.edu.cn}
+\IEEEauthorblockA{\IEEEauthorrefmark{2}China Unicom, Beijing, China \\
+Emails: hanmx12@chinaunicom.cn, gaofeng149@chinaunicom.cn}
+\IEEEauthorblockA{\IEEEauthorrefmark{3}China Academy of Information and Communications Technology, Artificial Intelligence Institute, Beijing, China \\
+Email: heiyiming@caict.ac.cn}
 }
 
 \maketitle
 
 \begin{abstract}
-Computer-use agents (CUAs), which perceive on-screen content, reason over user goals, and execute environment-grounded actions in desktop, web, and mobile settings, are advancing rapidly. At the same time, emerging open deployments such as OpenClaw have made these capabilities more visible outside benchmark settings, drawing broader attention to the safety, security, and governance risks of computer-use agents in real-world environments. However, existing research on CUAs remains fragmented across architectural design, evaluation, deployment practice, and risk analysis. In this survey, we provide a unified view of the field through a three-layer architecture---Perception, Decision, and Execution---that captures how CUAs represent state, reason about tasks, and ground actions in interactive environments. We complement this architectural perspective with a lifecycle view spanning creation, deployment, execution, and maintenance, showing how capabilities, risks, and responsibilities evolve from model development to real-world operation. Building on these foundations, we organize the emerging threat landscape of CUAs, including prompt injection, interface deception, tool and privilege misuse, memory compromise, and broader supply-chain failures, and relate these risks to concrete control points across the system lifecycle. We further discuss governance mechanisms for CUA ecosystems, including evaluation and benchmarking, auditing and provenance, permission control and sandboxing, and cross-stakeholder accountability. Overall, this survey aims to clarify how computer-use agents are built, where they fail, and what is required to make them more trustworthy, controllable, and sustainable at scale.
+Computer-use agents (CUAs) are evolving from benchmarked interface-following systems into deployable agents for real-world web, desktop, and mobile environments. This transition introduces a systems-level challenge: agent behavior is shaped not only by model capability, but also by the interaction among perception, planning, execution authority, memory, tool interfaces, and deployment constraints. Although existing studies have examined these factors through architectural analysis, benchmarking, and safety evaluation, a unified framework is still lacking to explain how they jointly determine capability, failure modes, and control requirements. To address this gap, we develop a two-dimensional analytical framework that combines a tri-layer architecture—Perception, Decision, and Execution—with a four-stage lifecycle consisting of Creation, Deployment, Operation, and Maintenance. This framework enables systematic analysis of how design choices in state representation, action abstraction, memory, and tool integration affect robustness and controllability across deployment stages. Based on this framework, we map major CUA security threats to concrete lifecycle-specific failure points and derive governance requirements centered on evaluation, provenance, sandboxing, auditing, and accountability. By treating CUAs as lifecycle-dependent interactive systems, this paper provides a unified foundation for understanding and governing computer-use agents in real-world environments.
 \end{abstract}
 
 \begin{IEEEkeywords}

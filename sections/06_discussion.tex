@@ -12,7 +12,7 @@ For CUA developers, security must be addressed at design time. \textbf{Threat mo
 \subsubsection{Deployment and Integration Teams (Deployment stage)}
 For deployment and integration teams, system-level boundaries are paramount. \textbf{Isolation and boundaries:} A guiding principle is to \emph{treat the environment as potentially adversarial} and enforce strong isolation. Over-privilege and weak isolation enable operation-stage attacks. Least-privilege access, sandboxing~\cite{meng2025cellmate,foerster2026camels}, and provenance-aware interfaces must be enforced before agents enter production. \textbf{Gating and red teaming:} The MCP Security Bench~\cite{zhang2025mcp} and Agent Security Bench~\cite{zhang2024agent} show that stronger models are often more exploitable. Deployment gating and pre-release red teaming~\cite{liao2025redteamcua} are therefore essential.
 
-\subsubsection{Operators (Execution stage)}
+\subsubsection{Operators (Operation stage)}
 For operators, the binary attribution (curiosity vs.\ malice) matters. Curiosity-driven overreach requires task-boundary and data-minimization controls. Malice-driven threats (e.g., Indirect Prompt Injection (IPI), memory poisoning) require intent verification and input sanitization. A practical principle is to \emph{close the loop with continuous monitoring and human confirmation for high-impact actions}. Runtime monitoring, misalignment detection~\cite{ning2026actions}, and human-in-the-loop confirmation remain critical. Operators must treat tool outputs as potentially adversarial and enforce constraints on cross-tool composition~\cite{zhang2025browsesafe}.
 
 \subsubsection{Maintainers and Ecosystem Stewards (Maintenance stage)}
@@ -32,7 +32,7 @@ Defense research is shifting from input filtering to lifecycle-spanning, multi-l
 \subsubsection{Deployment stage}
 \emph{Intent-aware access control} (CSAgent~\cite{gong2025secure}) binds actions to task intent via contextual integrity, defending against 99.36\% of attacks with ~7\% latency overhead. \emph{Sandboxing} (ceLLMate~\cite{meng2025cellmate}, CaMeLs~\cite{foerster2026camels}) constrains the blast radius of prompt injection via isolation and blind planning. \emph{Pre-release red teaming} (RedTeamCUA~\cite{liao2025redteamcua}) stress-tests agents before production.
 
-\subsubsection{Execution stage}
+\subsubsection{Operation stage}
 \emph{Intent provenance and misalignment detection} (IntentGuard~\cite{kang2025mitigating}, DeAction~\cite{ning2026actions}) trace action intent to its source and detect off-task or misaligned actions, cutting attack success by over 90\% without harming benign performance. \emph{Reasoning-layer guardrails} (MirrorGuard~\cite{zhang2026mirrorguard}) correct unsafe reasoning in simulation before GUI execution, reducing unsafe rates from 66.5\% to 13\%. \emph{Privacy protection} (PrivacyChecker~\cite{wang2025privacy}) filters agent-to-agent communication using context integrity, reducing PII leakage from 36\% to 7--8\%. Data minimization should be evaluated behaviorally~\cite{zharmagambetov2025agentdam}. \emph{Advanced guardrails} (ShieldAgent~\cite{chen2025shieldagent}, AgentDoG~\cite{liu2026agentdog}) provide real-time monitoring and diagnostic classification of risk sources.
 
 \subsubsection{Maintenance stage}

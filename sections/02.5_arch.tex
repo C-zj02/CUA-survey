@@ -1,33 +1,33 @@
 \section{Analytical Framework}
 \label{sec:framework}
 
-While the background above defines what CUAs observe and how they act, these preliminaries alone are insufficient to organize the emerging literature. In this survey, we adopt a two-dimensional analytical framework that combines an \textbf{architectural view} with a \textbf{lifecycle view}. The architectural view explains how a CUA is structurally assembled, whereas the lifecycle view explains when capabilities, risks, and governance obligations emerge.
+While the problem setting above defines what CUAs observe and how they act, these preliminaries alone are insufficient to explain the system-level design space. In this paper, we adopt a two-dimensional analytical framework that combines an \textbf{architectural view} with a \textbf{lifecycle view}. The architectural view explains how a CUA is structurally assembled, whereas the lifecycle view explains when capabilities, risks, and governance obligations emerge.
 
 \subsection{Why Architecture Alone Is Not Enough}
-A component-wise or architecture-centric taxonomy is useful for describing how a CUA perceives the environment, plans actions, invokes tools, and executes interface operations. It helps answer questions such as: What observation channel does the agent use? How is reasoning coordinated? What is delegated to tools or external modules? This perspective is essential for comparing agent designs across web, desktop, and mobile settings.
+A component-wise or architecture-centric decomposition is useful for describing how a CUA perceives the environment, plans actions, invokes tools, and executes interface operations. It helps answer questions such as: What observation channel does the agent use? How is reasoning coordinated? What is delegated to tools or external modules? This perspective is essential for comparing agent designs across web, desktop, and mobile settings.
 
-However, architecture alone provides only a static description of the system. Many important risks do not arise solely from what components exist, but from \emph{when} and \emph{under what conditions} those components are trained, deployed, exercised, and updated. For example, weaknesses rooted in data curation or objective design differ from risks introduced by runtime integrations, long-horizon interaction, or post-deployment updates. As a result, a purely structural taxonomy cannot fully explain how vulnerabilities originate or persist.
+However, architecture alone provides only a static description of the system. Many important risks do not arise solely from what components exist, but from \emph{when} and \emph{under what conditions} the overall system is created, deployed, operated, and updated. For example, weaknesses rooted in data curation or objective design differ from risks introduced by runtime integrations, long-horizon interaction, or post-deployment updates. As a result, a purely structural view cannot fully explain how vulnerabilities originate or persist.
 
 \subsection{Why Lifecycle Analysis Is Necessary}
-To capture these dynamics, we analyze CUAs through a four-stage lifecycle taxonomy:
-\emph{Creation, Deployment, Execution, and Maintenance}.
+To capture these dynamics, we analyze CUAs through a four-stage lifecycle framework:
+\emph{Creation, Deployment, Operation, and Maintenance}.
 
 \textbf{Creation} concerns how models, data, interfaces, and training objectives are constructed. Decisions at this stage shape what the agent can perceive, how it generalizes, and what biases or blind spots it inherits.
 
 \textbf{Deployment} concerns how the agent is embedded into real application ecosystems, including its permissions, identity, memory, tool bindings, and access to external resources. This stage determines what the agent is allowed to reach and what trust assumptions govern those interactions.
 
-\textbf{Execution} concerns online behavior under real tasks, where long-horizon planning, interface volatility, adversarial content, and multi-step dependencies can trigger compounding errors, unsafe actions, or instruction conflicts.
+\textbf{Operation} concerns online behavior under real tasks, where long-horizon planning, interface volatility, adversarial content, and multi-step dependencies can trigger compounding errors, unsafe actions, or instruction conflicts.
 
 \textbf{Maintenance} concerns updates, monitoring, regression control, benchmark drift, and ecosystem evolution. Even when a system behaves acceptably at launch, subsequent model revisions, tool changes, and environment shifts may reintroduce vulnerabilities or propagate failures across deployments.
 
 This lifecycle lens allows us to map risks to their point of origin rather than treating all failures as equivalent runtime phenomena.
 
 \subsection{Joint View: Linking System Design to Risk Emergence}
-The core argument of this survey is that architecture and lifecycle should be analyzed jointly.
+The core argument of this paper is that architecture and lifecycle should be analyzed jointly.
 
 The \textbf{architectural view} explains \emph{how} a CUA works: how observations are represented, how decisions are formed, and how actions are executed. The \textbf{lifecycle view} explains \emph{when} particular risks, controls, and governance requirements become salient. A perception module, for instance, may appear as a single architectural component, but its actual safety implications differ depending on whether the issue originates in training data, deployment constraints, runtime ambiguity, or later updates. Similarly, the same tool-use mechanism can be relatively benign under one permission model yet high-risk under another.
 
-For this reason, the remainder of the survey is organized around both lenses. We first analyze representative CUA architectures and interface abstractions, then examine the lifecycle stages through which these systems are created, deployed, exercised, and maintained. Building on this joint view, later sections discuss security, privacy, and governance as cross-cutting concerns that cannot be understood from either perspective alone.
+For this reason, the remainder of the paper is organized around both lenses. We first analyze representative CUA architectures and interface abstractions, then examine the lifecycle stages through which these systems are created, deployed, operated, and maintained. Building on this joint view, later sections discuss security, privacy, and governance as cross-cutting concerns that cannot be understood from either perspective alone.
 
 \subsection{Security and Governance Orientation}
 This framework also provides an attribution lens for discussing unsafe behavior. Not all failures reflect the same underlying cause: some arise from overreach under ambiguous objectives, some are induced by adversarial or deceptive content, and others are driven by environmental properties such as UI manipulation or misleading affordances~\cite{lazer2026survey,tur2025safearena,kuntz2025harm}. Existing benchmarks such as OS-Harm and SafeArena suggest that dialogue-level alignment does not automatically transfer to action-level safety in web and OS agents~\cite{kuntz2025harm,tur2025safearena}.
