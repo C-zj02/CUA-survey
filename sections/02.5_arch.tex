@@ -1,35 +1,50 @@
 \section{Analytical Framework}
 \label{sec:framework}
 
-While the problem setting above defines what CUAs observe and how they act, these preliminaries alone are insufficient to explain the system-level design space. In this paper, we adopt a two-dimensional analytical framework that combines an \textbf{architectural view} with a \textbf{lifecycle view}. The architectural view explains how a CUA is structurally assembled, whereas the lifecycle view explains when capabilities, risks, and governance obligations emerge.
+The problem setting above specifies what CUAs observe and how they act, but a survey still needs a synthesis device: a way to compare systems, risks, and controls without collapsing them into platform-specific case lists. To answer that need, this paper adopts a two-dimensional framework that combines an \textbf{architectural view} with a \textbf{lifecycle view}. The architectural view explains how a CUA is assembled; the lifecycle view explains when its capabilities, risks, and controls are formed, exposed, stressed, and revised.
 
-\subsection{Why Architecture Alone Is Not Enough}
-A component-wise or architecture-centric decomposition is useful for describing how a CUA perceives the environment, plans actions, invokes tools, and executes interface operations. It helps answer questions such as: What observation channel does the agent use? How is reasoning coordinated? What is delegated to tools or external modules? This perspective is essential for comparing agent designs across web, desktop, and mobile settings.
+\subsection{Why a Joint View Is Needed}
+For survey purposes, architecture alone is necessary but incomplete. A component-level description can explain how a CUA perceives the environment, reasons over a task, invokes tools, and executes interface operations. That view is useful for comparing agent designs across web, desktop, and mobile settings.
 
-However, architecture alone provides only a static description of the system. Many important risks do not arise solely from what components exist, but from \emph{when} and \emph{under what conditions} the overall system is created, deployed, operated, and updated. For example, weaknesses rooted in data curation or objective design differ from risks introduced by runtime integrations, long-horizon interaction, or post-deployment updates. As a result, a purely structural view cannot fully explain how vulnerabilities originate or persist.
+However, many important failures cannot be explained from structure alone. A weak perceptual module may reflect poor training data, but the same downstream error may also be caused by deployment-time observation loss, runtime interface deception, or maintenance-stage drift. Likewise, the same execution interface may be relatively benign under strict sandboxing but high-risk under broad permissions. A purely structural account therefore tells us \emph{how} the system works, but not \emph{when} and \emph{under what conditions} it becomes unsafe or hard to control.
 
-\subsection{Why Lifecycle Analysis Is Necessary}
-To capture these dynamics, we analyze CUAs through a four-stage lifecycle framework:
-\emph{Creation, Deployment, Operation, and Maintenance}.
+Lifecycle analysis provides that missing dimension. We distinguish four stages:
+\emph{Creation}, \emph{Deployment}, \emph{Operation}, and \emph{Maintenance}. Creation shapes what the agent can learn from data, objectives, and action abstractions. Deployment binds those capabilities to real platforms, tools, permissions, and trust boundaries. Operation reveals whether the system can remain coherent under long-horizon interaction and adversarial content. Maintenance determines whether the system stays reliable as interfaces, workflows, tools, and threat surfaces evolve. This view helps distinguish where a failure originates from where it becomes visible.
 
-\textbf{Creation} concerns how models, data, interfaces, and training objectives are constructed. Decisions at this stage shape what the agent can perceive, how it generalizes, and what biases or blind spots it inherits.
+\begin{table*}[!t]
+\centering
+\small
+\caption{How the lifecycle stages concentrate pressure on the tri-layer architecture. The joint view links capability formation, failure emergence, and control placement.}
+\label{tab:joint_framework}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabularx}{\textwidth}{L{1.7cm} L{2.8cm} L{2.8cm} L{2.8cm} Y}
+\toprule
+\textbf{Stage} & \textbf{Perception} & \textbf{Decision} & \textbf{Execution} & \textbf{Primary control question} \\
+\midrule
+Creation & Learn actionable grounding from data and representation choices & Shape objectives, decomposition priors, and reasoning habits & Define action vocabulary and safety abstractions & What capabilities and unsafe priors are built into the agent before deployment? \\
+Deployment & Bind observation channels such as pixels, DOM, OCR, or middleware state & Attach orchestration, memory, and policy mediation to the task loop & Bind tools, privileges, and sandboxes to executable actions & What authority is exposed, and how is model intent translated into controlled execution? \\
+Operation & Handle ambiguity, visual deception, and missing state online & Sustain long-horizon coherence, memory, recovery, and constraint tracking & Execute under latency, TOCTOU, and real permission boundaries & How do local errors or adversarial inputs become unsafe trajectories in live use? \\
+Maintenance & Adapt to UI drift, localization regressions, and benchmark shift & Update policies, evaluators, and recovery logic without regressions & Patch tools, permissions, logs, and containment mechanisms & How is reliability preserved as the environment and threat model change? \\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
-\textbf{Deployment} concerns how the agent is embedded into real application ecosystems, including its permissions, identity, memory, tool bindings, and access to external resources. This stage determines what the agent is allowed to reach and what trust assumptions govern those interactions.
+\subsection{What the Joint Framework Explains}
+The joint framework does more than organize prior work. It supports three analytical claims that guide the remainder of the survey.
 
-\textbf{Operation} concerns online behavior under real tasks, where long-horizon planning, interface volatility, adversarial content, and multi-step dependencies can trigger compounding errors, unsafe actions, or instruction conflicts.
+\textbf{First, capability is lifecycle-dependent.} What appears at runtime as ``agent ability'' is produced jointly by representational choices, training signals, deployment-time bindings, and online recovery mechanisms. A strong model alone is therefore not a sufficient explanation for robust computer use.
 
-\textbf{Maintenance} concerns updates, monitoring, regression control, benchmark drift, and ecosystem evolution. Even when a system behaves acceptably at launch, subsequent model revisions, tool changes, and environment shifts may reintroduce vulnerabilities or propagate failures across deployments.
+\textbf{Second, failure origin and failure manifestation are different questions.} Many failures surface during operation, but their roots may lie in creation-stage data gaps, deployment-stage trust decisions, or maintenance-stage regressions. Treating every unsafe action as a runtime reasoning failure obscures the real intervention point.
 
-This lifecycle lens allows us to map risks to their point of origin rather than treating all failures as equivalent runtime phenomena.
+\textbf{Third, control placement must follow both architecture and lifecycle.} Perception problems call for different controls than execution problems, and creation-stage controls differ from deployment-stage or maintenance-stage controls. Security and governance are therefore not post hoc add-ons; they are constraints that must be attached to the right layer at the right time.
 
-\subsection{Joint View: Linking System Design to Risk Emergence}
-The core argument of this paper is that architecture and lifecycle should be analyzed jointly.
+Table~\ref{tab:joint_framework} is the paper's master synthesis device. Later tables should therefore be read as \emph{local instantiations} of this joint view rather than as separate taxonomies. The survey's main argument is singular: CUAs should be compared through the interaction between structural layer and lifecycle stage.
 
-The \textbf{architectural view} explains \emph{how} a CUA works: how observations are represented, how decisions are formed, and how actions are executed. The \textbf{lifecycle view} explains \emph{when} particular risks, controls, and governance requirements become salient. A perception module, for instance, may appear as a single architectural component, but its actual safety implications differ depending on whether the issue originates in training data, deployment constraints, runtime ambiguity, or later updates. Similarly, the same tool-use mechanism can be relatively benign under one permission model yet high-risk under another.
+\subsection{OpenClaw as a Running Example of Open Deployment}
+To keep the framework concrete, we use OpenClaw as a running example throughout the remainder of the paper. Public descriptions suggest a local-first personal assistant that can be reached through persistent communication channels and connected to longer-lived sessions, tools, and agent communities~\cite{openclaw2026website,ibm2026openclaw,chen2026openclaw}. These publicly described properties make it analytically useful because they expose, in a single setting, the main system tensions emphasized by this paper: how perception, decision, and execution are mediated through an open control plane; how deployment choices concentrate authority; and how maintenance and governance become harder once tools and capabilities can evolve or propagate socially.
 
-For this reason, the remainder of the paper is organized around both lenses. We first analyze representative CUA architectures and interface abstractions, then examine the lifecycle stages through which these systems are created, deployed, operated, and maintained. Building on this joint view, later sections discuss security, privacy, and governance as cross-cutting concerns that cannot be understood from either perspective alone.
+This use of OpenClaw is illustrative rather than exhaustive. We do not assume access to its full internal design, nor do we treat it as the only valid deployment model for CUAs. Instead, OpenClaw serves as a concrete example of the broader class of \emph{open-deployment CUA systems}, in which persistent ingress channels, extensible tool interfaces, memory, and ecosystem participation produce capabilities and risks that benchmark-only analyses tend to understate.
 
-\subsection{Security and Governance Orientation}
-This framework also provides an attribution lens for discussing unsafe behavior. Not all failures reflect the same underlying cause: some arise from overreach under ambiguous objectives, some are induced by adversarial or deceptive content, and others are driven by environmental properties such as UI manipulation or misleading affordances~\cite{lazer2026survey,tur2025safearena,kuntz2025harm}. Existing benchmarks such as OS-Harm and SafeArena suggest that dialogue-level alignment does not automatically transfer to action-level safety in web and OS agents~\cite{kuntz2025harm,tur2025safearena}.
-
-Accordingly, our analysis treats security and governance not as isolated add-on topics, but as concerns that intersect with both architecture and lifecycle. This perspective helps explain why the same capability mechanism may produce very different risk profiles across deployment contexts and development stages.
+\subsection{Orientation for the Rest of the Paper}
+The remainder of the survey proceeds in two passes. We first analyze the tri-layer architecture of CUAs and then examine the four lifecycle stages through which those systems are built, deployed, operated, and maintained. Later sections use the joint framework to organize the security landscape and derive practical implications for defense and governance~\cite{kuntz2025harm,zheng2026riskybench,wang2026asset}.

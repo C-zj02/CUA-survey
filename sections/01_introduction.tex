@@ -1,69 +1,72 @@
 \section{Introduction}
 \label{sec:intro}
 
-Computer-use agents (CUAs) are emerging as one of the most consequential forms of agentic AI. Rather than stopping at language generation, these systems inspect interface state, interpret user goals, and carry out actions in websites, desktop software, and mobile applications. Recent progress in multimodal modeling, tool use, and interactive evaluation has pushed CUAs beyond narrow automation settings toward more general software operation. In practice, many of these systems already rely on hybrid control stacks that combine screen understanding with structural signals and GUI interaction with APIs, scripts, or command execution.
+Computer-use agents (CUAs) are becoming one of the clearest expressions of agentic AI. Rather than stopping at language generation, these systems inspect interface state, interpret user goals, and execute actions in websites, desktop software, and mobile applications. Recent progress in multimodal modeling, large-scale computer-use data, and trajectory-selection methods has therefore pushed CUAs from narrow automation settings toward more general software operation~\cite{wang2025opencua,gonzalez2025scalingcua}.
 
-This shift changes not only what AI systems can do, but also how failure should be understood. In dialogue settings, a mistake often remains a textual error. In computer-use settings, the same mistake may become an unintended purchase, a deleted file, a permission change, an unsafe command, or a persistent workflow misconfiguration. The risk surface expands further as evaluation moves from reproducible web benchmarks such as Mind2Web and WebArena to open environments such as OSWorld, where agents must cope with unfamiliar interfaces, long-horizon tasks, visual ambiguity, and cross-application dependencies~\cite{deng2023mind2web,zhou2023webarena,xie2024osworld}. As a result, computer use is no longer only a benchmark problem; it is increasingly a systems, security, and governance problem.
+This shift changes both capability and risk. In dialogue systems, many errors remain textual. In computer-use settings, the same error may become an unintended purchase, a deleted file, a privilege change, an unsafe command, or a persistent workflow misconfiguration. The challenge becomes sharper as evaluation moves from controlled benchmarks such as Mind2Web and WebArena to open environments such as OSWorld, where agents must cope with unfamiliar interfaces, long-horizon tasks, visual ambiguity, and cross-application dependencies~\cite{deng2023mind2web,zhou2023webarena,xie2024osworld}. Computer use is therefore no longer only a benchmark problem; it is a systems, security, and governance problem.
 
-A useful signal of this transition is \textbf{OpenClaw}. Public descriptions portray it not as a closed benchmark artifact, but as a local-first personal assistant connected to persistent communication channels such as WhatsApp, Telegram, Slack, Discord, and iMessage~\cite{openclaw2026website,ibm2026openclaw}. Whether or not OpenClaw becomes a dominant platform is secondary. What it makes visible is a broader systems question: once a CUA is embedded in live channels, tools, memory, sessions, and permissions, capability can no longer be studied independently from authority, trust boundaries, and operational control.
+Open deployment efforts make this transition especially visible. Public descriptions of \textbf{OpenClaw}, for example, suggest a local-first assistant that can be reached through persistent channels such as WhatsApp, Telegram, Slack, Discord, and iMessage~\cite{openclaw2026website,ibm2026openclaw}. Whether OpenClaw becomes a dominant platform is less important than what it reveals analytically: once a CUA is embedded in live channels, tools, memory, sessions, and permissions, capability can no longer be studied independently from authority, trust boundaries, and operational control.
 
-Existing work addresses important aspects of this broader problem. Some studies focus on GUI-agent architecture, OS-agent environments, and multimodal agent ecosystems, while others examine safety benchmarks, misuse evaluation, prompt injection, and agent security frameworks~\cite{nguyen2025gui,hu2025agents,tang2025survey,kuntz2025harm,tur2025safearena,liu2025wainjectbench,adapala2025aegis,lazer2026survey}. However, these perspectives are still largely developed in parallel. As a result, the field lacks a systems-level account of how architectural choices, deployment decisions, runtime interaction, and post-deployment change jointly shape CUA capability, failure modes, and control requirements.
+Throughout the paper, we therefore use OpenClaw as a \emph{running example} of open CUA deployment rather than as the sole empirical object of study. The goal is not to claim complete knowledge of its internal implementation, but to use publicly described properties---persistent channel ingress, local-first deployment, tool and session binding, and agent-to-agent interaction---to make the architecture--lifecycle framework concrete in a recognizable open-system setting.
 
-More specifically, prior GUI-agent and OS-agent studies mainly clarify \emph{architectural design choices}, benchmark construction, and platform coverage~\cite{nguyen2025gui,hu2025agents,tang2025survey}. Safety benchmarks such as OS-Harm, SafeArena, and WAInjectBench make \emph{action-level misuse and attack exposure} measurable, but do not by themselves explain how such failures arise from system design or deployment configuration~\cite{kuntz2025harm,tur2025safearena,liu2025wainjectbench}. Broader agent-security efforts, such as Aegis and recent agentic-AI security analyses, contribute important protocol, governance, and risk-analysis perspectives, yet they do not explicitly center the perception--decision--execution loop and deployment-specific characteristics that distinguish CUAs from more general agent systems~\cite{adapala2025aegis,lazer2026survey}. Table~\ref{tab:related_work_comparison} summarizes this positioning relative to representative prior work and benchmarks.
+Existing work illuminates important parts of this landscape, but mostly in parallel. GUI-agent and OS-agent surveys clarify architectural design choices, benchmark construction, and platform coverage~\cite{nguyen2025gui,hu2025agents,tang2025survey}. Recent system-building efforts such as OpenCUA and scaling studies such as bBoN show that the field is moving from isolated prototypes toward open foundations and reliability-oriented evaluation~\cite{wang2025opencua,gonzalez2025scalingcua}. Safety benchmarks such as OS-Harm, SafeArena, WAInjectBench, and the more deployment-grounded Risky-Bench make action-level misuse measurable, but they do not by themselves explain how those failures arise from system design or deployment configuration~\cite{kuntz2025harm,tur2025safearena,liu2025wainjectbench,zheng2026riskybench}. Broader agent-security surveys remain useful as governance context rather than primary evidence for CUA-specific architecture and lifecycle claims~\cite{adapala2025aegis,lazer2026survey}. The present survey therefore brings these strands into a single CUA-centered synthesis.
 
-This paper studies general-purpose CUAs across GUI, OS, and web environments, treating them as end-to-end interactive systems rather than isolated benchmark models. We focus on how perception, reasoning, action interfaces, execution authority, and operating context interact in realistic deployments, while excluding dialogue-only agents, traditional rule-based robotic process automation, and embodied robotics except where they directly inform CUA design and governance.
+This survey argues that CUAs are best understood through a \emph{joint architecture--lifecycle perspective}. Architecture explains \emph{how} a CUA works: how it reconstructs interface state, forms task-conditioned decisions, and executes actions. Lifecycle explains \emph{when} capabilities, risks, and controls are created, exposed, stressed, and revised. Our central claim is that many practical CUA failures cannot be explained by either lens alone. Capability bottlenecks may originate during training, surface only after deployment, compound during operation, and reappear after updates. A useful survey framework must therefore connect system structure to system evolution over time.
 
-To address the gap above, we analyze CUAs through a joint architecture--lifecycle perspective and make three contributions:
+We study general-purpose CUAs across web, desktop, and mobile environments, treating them as end-to-end interactive systems rather than isolated benchmark models. The focus is on how perception, reasoning, action interfaces, execution authority, and operating context interact in realistic deployments.
+
+\paragraph{Survey scope and selection criteria.}
+This paper is written as a synthesis survey rather than an exhaustive catalog. We organize the corpus around representative systems, benchmarks, deployment efforts, and security studies available by April 2026, then expand coverage through closely related work cited by those anchor papers. Priority is given to work that either introduces a general-purpose CUA system, benchmark, or deployment setting; clarifies architectural choices in perception, decision-making, or execution; evaluates safety or adversarial misuse in action-taking agents; or addresses deployment, tooling, and governance issues that materially affect real-world CUA operation. Because the area is evolving quickly, the surveyed corpus is weighted toward 2023--2026 work, while earlier papers are retained only when they establish durable concepts such as reflective control, partial observability, or interface-level action modeling. Dialogue-only agents, traditional rule-based robotic process automation, and embodied robotics are discussed only when they directly inform CUA design, evaluation, or governance.
+
+Accordingly, this survey makes three contributions:
 \begin{itemize}
-  \item \textbf{Integrated architecture--lifecycle framework.} We organize the design space of computer-use agents using a unified \emph{Perception--Decision--Execution} architecture connected to a four-stage lifecycle of \emph{Creation, Deployment, Operation, and Maintenance}.
-  \item \textbf{Security and risk analysis for CUAs.} We systematize the security landscape of computer-use agents through a lifecycle-aware threat model covering prompt injection, interface deception, tool and privilege misuse, memory compromise, and extension-layer or supply-chain failures.
-  \item \textbf{Governance framing for open computer-use ecosystems.} We outline governance mechanisms for deploying CUAs in realistic computing environments, including evaluation and benchmarking, auditing and provenance, permission and sandboxing controls, and accountability across stakeholders.
+  \item \textbf{A joint architecture--lifecycle framework.} We organize the CUA design space using a tri-layer architecture of \emph{Perception}, \emph{Decision}, and \emph{Execution} linked to a four-stage lifecycle of \emph{Creation}, \emph{Deployment}, \emph{Operation}, and \emph{Maintenance}. This framework identifies where capability bottlenecks are formed, where failures first surface, and where controls can be attached.
+  \item \textbf{A lifecycle-aware security analysis.} We map the security landscape of CUAs to concrete failure points across the lifecycle, covering prompt injection, interface deception, tool and privilege misuse, memory compromise, agent-to-agent propagation, and supply-chain failures.
+  \item \textbf{A governance synthesis for open deployment.} We derive governance implications for realistic computing environments, emphasizing constrained action interfaces, provenance, permission and sandboxing controls, auditing, regression evaluation, and accountability across stakeholders.
 \end{itemize}
 
 \begin{table*}[!t]
 \centering
-\caption{Positioning of this paper relative to representative prior work and safety benchmarks for computer-use / GUI agents. Symbols: \checkmark\ = dedicated section-level coverage; $\sim$ = partial mention; -- = not covered.}
-\label{tab:related_work_comparison}
-\resizebox{\textwidth}{!}{
-\begin{tabular}{llccccp{5.8cm}}
+\scriptsize
+\caption{Representative CUA landscape used to anchor the survey.}
+\label{tab:representative_landscape}
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\textwidth}{L{1.95cm}L{1.45cm}L{1.55cm}L{2.75cm}L{1.75cm}Y}
 \toprule
-\textbf{Work} & \textbf{Scope} &
-\textbf{Arch.} & \textbf{Lifecycle} & \textbf{Safety} & \textbf{Govern.} &
-\textbf{Diff. (keywords)} \\
+\textbf{Work} & \textbf{Type} & \textbf{Setting} &
+\textbf{Obs./control} & \textbf{Pressure} &
+\textbf{Role in this survey} \\
 \midrule
-Nguyen et al.~\cite{nguyen2025gui} & GUI-agent systems and benchmarks &
-\checkmark & $\sim$ & $\sim$ & -- &
-systems and benchmarks \\
-Hu et al.~\cite{hu2025agents} & Computer/phone/browser agent ecosystems &
-\checkmark & $\sim$ & -- & $\sim$ &
-app ecosystems \\
-Tang et al.~\cite{tang2025survey} & GUI-agent resources and taxonomies &
-$\sim$ & -- & -- & -- &
-resource curation \\
-\midrule
-Kuntz et al.~\cite{kuntz2025harm} & OS/computer-use safety benchmark &
--- & -- & \checkmark & -- &
-benchmark evaluation \\
-Tur et al.~\cite{tur2025safearena} & Web-agent misuse benchmark &
--- & -- & \checkmark & -- &
-misuse evaluation \\
-Liu et al.~\cite{liu2025wainjectbench} & Prompt-injection benchmark &
--- & -- & \checkmark & -- &
-injection evaluation \\
-\midrule
-Lazer et al.~\cite{lazer2026survey} & Broad agentic-AI security and governance &
--- & -- & \checkmark & \checkmark &
-broad agent security \\
-Adapala et al.~\cite{adapala2025aegis} & Open agent security framework &
--- & -- & \checkmark & \checkmark &
-security protocols \\
-\midrule
-\textbf{Ours} & CUA ecosystem (GUI/OS/Web) &
-\checkmark & \checkmark & \checkmark & \checkmark &
-\textbf{integrated architecture/lifecycle/governance} \\
+Mind2Web~\cite{deng2023mind2web} & Benchmark & Web &
+Structured browser state and instruction following & Creation / eval. &
+Anchors web grounding and diverse web-task evaluation. \\
+WebArena~\cite{zhou2023webarena} & Benchmark & Web &
+Reproducible web environments with browser-side control & Operation &
+Represents long-horizon web interaction in controlled yet realistic settings. \\
+OSWorld~\cite{xie2024osworld} & Benchmark & Desktop / OS &
+Open GUI state under real computer tasks & Deploy. / oper. &
+Makes visible the shift from browser agents to open computer use. \\
+OpenCUA~\cite{wang2025opencua} & Open foundation & Cross-OS &
+Demonstration capture, large-scale trajectories, and open end-to-end CUA models & Creation &
+Represents the shift from benchmark-only progress toward open data and model foundations for CUAs. \\
+UFO~\cite{zhang2025ufo} & System & Desktop &
+Hierarchical application routing plus local action execution & Decision / deploy. &
+Shows how decomposition reshapes orchestration and multi-app workflows. \\
+OS-Copilot~\cite{wu2024copilot} & System & Desktop / OS &
+Hybrid GUI interaction and code/tool execution & Exec. / privilege &
+Represents the move from pure GUI clicking to higher-authority hybrid action spaces. \\
+OS-Harm~\cite{kuntz2025harm} & Safety benchmark & Desktop / OS &
+Risk-focused evaluation for action-taking agents & Creation / release &
+Captures why action-level safety must be evaluated separately from task success. \\
+SafeArena~\cite{tur2025safearena} & Safety benchmark & Web &
+Real-website misuse and harmful-task completion & Oper. security &
+Represents the misuse-focused evaluation line in realistic web settings. \\
+OpenClaw~\cite{openclaw2026website,ibm2026openclaw} & Open deployment exemplar & Multi-channel / local-first &
+Persistent ingress, tool binding, sessions, and ecosystem participation & Deploy. / maint. &
+Provides the running example for open deployment, governance, and capability diffusion. \\
 \bottomrule
-\end{tabular}
-}
+\end{tabularx}
 \end{table*}
 
-Together, these contributions reposition CUAs as a full-stack systems problem rather than a standalone benchmark category.
+Table~\ref{tab:representative_landscape} previews the representative landscape that anchors the remainder of the survey. Together, these contributions reposition CUAs as lifecycle-dependent interactive systems rather than a standalone benchmark category. The rest of the paper fixes the problem setting and framework, then surveys architectural and lifecycle design choices, maps the security landscape, and distills practical implications for defense and governance.

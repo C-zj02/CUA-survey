@@ -1,41 +1,56 @@
-\section{Security Principles and Existing Practices}
+\section{From Threats to Controls: Practical Security Implications}
 \label{sec:discussion}
 
-\subsection{Security Implications and Design Principles}
+\subsection{Control Placement Should Follow Failure Origin}
 \label{subsec:implications}
 
-The security landscape described in Section~\ref{sec:security} carries broad implications for stakeholders. Building on the lifecycle-oriented threat analysis and attribution framework, this section distills key security principles and existing practices for different roles. We organize them by lifecycle role and attribution focus, aligning with the threat model and the curiosity--malice attribution framework.
+The threat analysis in Section~\ref{sec:security} suggests a simple but important lesson: defenses should be attached where failures are \emph{introduced}, not only where they are eventually observed. A CUA that fails at runtime may require intervention during creation, deployment, operation, maintenance, or several of these stages at once.
 
-\subsubsection{CUA Developers (Creation stage)}
-For CUA developers, security must be addressed at design time. \textbf{Threat model and safe interfaces:} A core principle is to \emph{design for least privilege and safe interfaces by default}, adopting the threat model in Section~\ref{subsec:threat_model} and accounting for UI deception~\cite{jones2025systematization}, indirect prompt injection~\cite{zhan2024injecagent,evtimov2025wasp}, and action rebinding~\cite{qian2026zero}. Because threats span curiosity and malice, developers cannot rely on dialogue-level alignment alone. Scenario-specific alignment and behavioral measurement are required~\cite{kuntz2025harm,tian2025measuring}. \textbf{Supply chain:} Hygiene for skills, plugins, and tool definitions is essential. Metadata integrity verification and digital signing should precede distribution. Evil Geniuses~\cite{tian2023evil} and the Microsoft CUA systematization~\cite{jones2025systematization} underscore that agent security combines NLP safety with classic software security.
+\textbf{Creation-stage controls} should shape what the model is allowed to learn and emit. Safe action abstractions, constrained high-impact operations, and benchmark-based release gating reduce the chance that unsafe behavior is built into the agent from the outset~\cite{kuntz2025harm,tian2025measuring,miculicich2025veriguard}. This is also the stage at which threat models should be made explicit rather than delegated to downstream operators.
 
-\subsubsection{Deployment and Integration Teams (Deployment stage)}
-For deployment and integration teams, system-level boundaries are paramount. \textbf{Isolation and boundaries:} A guiding principle is to \emph{treat the environment as potentially adversarial} and enforce strong isolation. Over-privilege and weak isolation enable operation-stage attacks. Least-privilege access, sandboxing~\cite{meng2025cellmate,foerster2026camels}, and provenance-aware interfaces must be enforced before agents enter production. \textbf{Gating and red teaming:} The MCP Security Bench~\cite{zhang2025mcp} and Agent Security Bench~\cite{zhang2024agent} show that stronger models are often more exploitable. Deployment gating and pre-release red teaming~\cite{liao2025redteamcua} are therefore essential.
+\textbf{Deployment-stage controls} should govern authority and mediation. Least privilege, provenance-aware interfaces, sandboxing, and intent-aware access control are essential because deployment determines which tools, accounts, and execution channels are reachable in practice~\cite{gong2025secure,meng2025cellmate,foerster2026camels}. In open systems, deployment is not a thin wrapper around a model; it is part of the security perimeter.
 
-\subsubsection{Operators (Operation stage)}
-For operators, the binary attribution (curiosity vs.\ malice) matters. Curiosity-driven overreach requires task-boundary and data-minimization controls. Malice-driven threats (e.g., Indirect Prompt Injection (IPI), memory poisoning) require intent verification and input sanitization. A practical principle is to \emph{close the loop with continuous monitoring and human confirmation for high-impact actions}. Runtime monitoring, misalignment detection~\cite{ning2026actions}, and human-in-the-loop confirmation remain critical. Operators must treat tool outputs as potentially adversarial and enforce constraints on cross-tool composition~\cite{zhang2025browsesafe}.
+\textbf{Operation-stage controls} should contain unsafe trajectories before they become high-impact outcomes. Runtime verification, human confirmation for consequential actions, misalignment detection, and defensive treatment of tool outputs all belong here~\cite{kang2025mitigating,ning2026actions,zhang2025browsesafe}. The main question is not only whether an agent can complete a task, but whether it can remain on-task under ambiguity, adversarial inputs, and long-horizon pressure.
 
-\subsubsection{Maintainers and Ecosystem Stewards (Maintenance stage)}
-For maintainers and ecosystem stewards, agent-to-agent propagation introduces governance gaps. A key principle is to \emph{govern agent societies as first-class security subjects}, not just as implementation details. Platforms such as OpenClaw--Moltbook~\cite{chen2026openclaw} demonstrate that skills propagate at machine scale with minimal vetting. Identity and access management for non-human entities, content governance for agent social platforms, and defenses against Prompt Infection~\cite{lee2024prompt} are emerging priorities. Centralized or federated registries with verified identities, version pinning, and audit trails help mitigate supply-chain risks.
+\textbf{Maintenance-stage controls} should preserve validity over time. Continuous regression testing, vulnerability management, audit trails, and policy updates are required because interface drift, tool churn, and ecosystem change can reintroduce previously solved problems~\cite{zheng2026riskybench,wang2026asset,liu2026clawkeeper}. For CUAs, secure deployment is therefore not a one-time event.
 
-\subsubsection{Researchers}
-For researchers, a key finding is that \textbf{safety alignment in dialogue does not automatically transfer to action}. A research principle is to \emph{measure what matters at the action level}: benchmarks such as OS-Harm~\cite{kuntz2025harm}, RiOSWorld~\cite{yang2025riosworld}, and CUAHarm~\cite{tian2025measuring} demonstrate that scenario-specific alignment, environment-aware policies, and behavioral measurement are necessary. Research should prioritize cross-modal defenses (text and vision), plan-time safety awareness~\cite{chen2026lps}, and formal verification~\cite{miculicich2025veriguard}. The attribution framework also highlights an underexplored challenge: \emph{observing and attributing} curiosity vs.\ malice in agent behavior---critical for designing targeted defenses.
+Under the attribution framework, the control logic becomes more specific. \textbf{Scope overreach} is best contained by clearer task boundaries, data-minimization policy, confirmation thresholds, and memory scoping. \textbf{Objective corruption} is best contained by provenance separation, tool and extension vetting, memory hygiene, retrieval controls, and defenses that prevent external instructions from becoming operative goals. \textbf{Environmental misbinding} is best contained by stronger mediation between perception and execution, least privilege, sandboxing, TOCTOU-aware verification, and auditable action binding.
 
-\subsection{Recommendations and Defense Frameworks}
+\subsection{Stakeholder Responsibilities Are Coupled}
+
+\begin{table*}[!t]
+\centering
+\scriptsize
+\caption{Stakeholder responsibilities derived from the joint framework.}
+\label{tab:actor_control_matrix}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{L{1.8cm} L{2.8cm} L{2.8cm} L{2.8cm} Y}
+\toprule
+\textbf{Actor} & \textbf{Creation} & \textbf{Deployment} & \textbf{Operation} & \textbf{Maintenance} \\
+\midrule
+Developers & Define action abstractions, training objectives, benchmark targets & Expose policy hooks, provenance fields, safe defaults & Support verifier hooks and interpretable traces & Patch regressions and update evaluation criteria \\
+Deployment teams & Validate model-package integrity and release gates & Scope privileges, sandbox tools, configure trust boundaries & Enforce confirmation thresholds and environment isolation & Reconfigure permissions and retire unsafe integrations \\
+Operators & Define task policy and escalation rules & Approve high-impact workflows and account bindings & Monitor incidents, review risky actions, handle exceptions & Feed failures back into policy and regression suites \\
+Ecosystem stewards & Maintain registries, signing, disclosure process & Govern plugin, skill, and MCP distribution & Detect abuse propagation and preserve identity/provenance & Manage coordinated patching, version pinning, ecosystem response \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+The same reasoning also changes how responsibilities should be assigned. Developers mainly own creation-stage risks such as unsafe abstractions, training objectives, and latent objective corruption. Deployment teams mainly own environmental-misbinding risks introduced by privilege, tooling, and mediation choices. Operators mainly own operation-stage scope control, escalation, and runtime detection. Ecosystem stewards mainly own maintenance-stage propagation, registry integrity, and coordinated response. These roles are analytically separable but operationally coupled: weak deployment can negate careful model training, and weak maintenance can erase earlier safety gains.
+
+Viewed through the publicly described OpenClaw example, this division of labor becomes concrete. Developers define what actions can be safely exposed; deployment teams decide how messaging channels, tools, and sessions are bound; operators govern approval and escalation for live tasks; and ecosystem stewards manage the provenance and policy discipline of the broader capability-sharing surface. This coupling is especially visible in open ecosystems, where provenance, identity, and version discipline become preconditions for safe operation~\cite{chen2026openclaw,wang2026asset,liu2026clawkeeper}.
+
+\subsection{A Minimal Defense Stack for Open CUA Systems}
 \label{subsec:recommendations}
 
-Defense research is shifting from input filtering to lifecycle-spanning, multi-layer protection. We summarize representative frameworks by lifecycle stage and attribution target.
+No single mechanism is sufficient. The current literature instead points toward a minimal layered defense stack for realistic CUA deployment:
+\begin{itemize}
+  \item \textbf{Constrained action interfaces.} High-impact operations should be represented through auditable, semantically narrow interfaces rather than unconstrained low-level action spaces wherever possible~\cite{jones2025systematization,miculicich2025veriguard}.
+  \item \textbf{Provenance-aware mediation.} The system should preserve the distinction between user-authored intent, retrieved content, tool outputs, and environment text so that instruction source remains inspectable~\cite{kang2025mitigating,zhang2025browsesafe}.
+  \item \textbf{Least privilege and sandboxing.} Tool access, filesystem reach, network scope, and account authority should be narrowed before deployment, not after the first incident~\cite{gong2025secure,meng2025cellmate,foerster2026camels}.
+  \item \textbf{Runtime verification and escalation control.} High-impact actions should trigger verification, policy checks, or human confirmation, especially under uncertainty or when plan execution deviates from task scope~\cite{ning2026actions,zhang2026mirrorguard,liu2026clawkeeper}.
+  \item \textbf{Continuous evaluation and ecosystem governance.} Regression suites, red teaming, signed registries, and versioned identities are necessary to prevent maintenance-stage drift from becoming a supply-chain or multi-agent security problem~\cite{liao2025redteamcua,zheng2026riskybench,zhang2025mcp,wang2026asset}.
+\end{itemize}
 
-\subsubsection{Creation stage}
-\emph{Formal verification} (VeriGuard~\cite{miculicich2025veriguard}) applies provably sound verification to code-agent outputs, achieving 0\% ASR on evaluated benchmarks. \emph{Safe interfaces and abstractions} reduce low-level action entropy. Constrained primitives force high-impact actions into auditable operations. \emph{Benchmarks} (OS-Harm, CUAHarm, LPS-BENCH) convert safety from qualitative claims into quantitative signals for release gating.
-
-\subsubsection{Deployment stage}
-\emph{Intent-aware access control} (CSAgent~\cite{gong2025secure}) binds actions to task intent via contextual integrity, defending against 99.36\% of attacks with ~7\% latency overhead. \emph{Sandboxing} (ceLLMate~\cite{meng2025cellmate}, CaMeLs~\cite{foerster2026camels}) constrains the blast radius of prompt injection via isolation and blind planning. \emph{Pre-release red teaming} (RedTeamCUA~\cite{liao2025redteamcua}) stress-tests agents before production.
-
-\subsubsection{Operation stage}
-\emph{Intent provenance and misalignment detection} (IntentGuard~\cite{kang2025mitigating}, DeAction~\cite{ning2026actions}) trace action intent to its source and detect off-task or misaligned actions, cutting attack success by over 90\% without harming benign performance. \emph{Reasoning-layer guardrails} (MirrorGuard~\cite{zhang2026mirrorguard}) correct unsafe reasoning in simulation before GUI execution, reducing unsafe rates from 66.5\% to 13\%. \emph{Privacy protection} (PrivacyChecker~\cite{wang2025privacy}) filters agent-to-agent communication using context integrity, reducing PII leakage from 36\% to 7--8\%. Data minimization should be evaluated behaviorally~\cite{zharmagambetov2025agentdam}. \emph{Advanced guardrails} (ShieldAgent~\cite{chen2025shieldagent}, AgentDoG~\cite{liu2026agentdog}) provide real-time monitoring and diagnostic classification of risk sources.
-
-\subsubsection{Maintenance stage}
-\emph{Governance for agent societies} (Aegis Protocol~\cite{adapala2025aegis}) proposes decentralized identifiers, post-quantum cryptography, and zero-knowledge proofs for verifiable policy compliance. LLM Tagging~\cite{lee2024prompt} mitigates infection spread in multi-agent systems. Continuous evaluation, regression suites, and vulnerability management operationalize benchmarks into release gates and incident response.
-
-No single defense suffices. A layered approach combining intent verification, reasoning correction, formal methods, sandboxing, and governance is needed. Developers and operators should select defenses based on threat model, lifecycle stage, attribution class (curiosity vs.\ malice vs.\ environmental), and acceptable performance-cost trade-offs.
+Safe CUA deployment depends less on any single alignment technique than on whether the full stack connects architectural choices, authority boundaries, and operational controls in a coherent way.

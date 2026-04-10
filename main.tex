@@ -1,5 +1,6 @@
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
+\raggedbottom
 
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -11,20 +12,23 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
-\usepackage{url}
+\usepackage{xurl}
 
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\Urlmuskip=0mu plus 1mu\relax
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \begin{document}
 
-\title{From OpenClaw to Computer-Use Agents: Architecture, Lifecycle, Security Risks, and Governance}
+\title{A Survey of Computer-Use Agents in Open Environments: Architecture, Lifecycle, and Security}
 
 \author{
-\IEEEauthorblockN{Zejian Chen\IEEEauthorrefmark{1}, Zhanyuan Liu\IEEEauthorrefmark{1}, Chaozhuo Li\IEEEauthorrefmark{1}, Mengxiang Han\IEEEauthorrefmark{2}, Litian Zhang\IEEEauthorrefmark{1}, Feng Gao\IEEEauthorrefmark{2}, Yiming Hei\IEEEauthorrefmark{3}, Xi Zhang\IEEEauthorrefmark{1}\thanks{Corresponding author: Xi Zhang (zhangx@bupt.edu.cn).}}
+\IEEEauthorblockN{Zejian Chen\IEEEauthorrefmark{1}, Zhanyuan Liu\IEEEauthorrefmark{1}, Chaozhuo Li\IEEEauthorrefmark{1}, Mengxiang Han\IEEEauthorrefmark{2},\\
+Litian Zhang\IEEEauthorrefmark{1}, Feng Gao\IEEEauthorrefmark{2}, Yiming Hei\IEEEauthorrefmark{3}, Xi Zhang\IEEEauthorrefmark{1}\thanks{Corresponding author: Xi Zhang (zhangx@bupt.edu.cn).}}
 \IEEEauthorblockA{\IEEEauthorrefmark{1}Beijing University of Posts and Telecommunications, Beijing, China \\
 Emails: \{chenzejian, doubao, lichaozhuo, zhanglitian, zhangx\}@bupt.edu.cn}
 \IEEEauthorblockA{\IEEEauthorrefmark{2}China Unicom, Beijing, China \\
@@ -36,7 +40,7 @@ Email: heiyiming@caict.ac.cn}
 \maketitle
 
 \begin{abstract}
-Computer-use agents (CUAs) are evolving from benchmarked interface-following systems into deployable agents for real-world web, desktop, and mobile environments. This transition introduces a systems-level challenge: agent behavior is shaped not only by model capability, but also by the interaction among perception, planning, execution authority, memory, tool interfaces, and deployment constraints. Although existing studies have examined these factors through architectural analysis, benchmarking, and safety evaluation, a unified framework is still lacking to explain how they jointly determine capability, failure modes, and control requirements. To address this gap, we develop a two-dimensional analytical framework that combines a tri-layer architecture—Perception, Decision, and Execution—with a four-stage lifecycle consisting of Creation, Deployment, Operation, and Maintenance. This framework enables systematic analysis of how design choices in state representation, action abstraction, memory, and tool integration affect robustness and controllability across deployment stages. Based on this framework, we map major CUA security threats to concrete lifecycle-specific failure points and derive governance requirements centered on evaluation, provenance, sandboxing, auditing, and accountability. By treating CUAs as lifecycle-dependent interactive systems, this paper provides a unified foundation for understanding and governing computer-use agents in real-world environments.
+This survey examines computer-use agents (CUAs) as they move from benchmarked web and OS assistants to agents that operate across browsers, desktops, mobile apps, and long-lived tool ecosystems. In these settings, capability and risk are determined not by model quality alone, but by the coupling among perception, decision-making, execution interfaces, memory, permissions, and deployment context. Existing work addresses these factors from separate perspectives, including GUI-agent architecture, benchmark design, and agent security, but lacks a synthesis of how they interact in deployed systems. We provide such a synthesis through a joint architecture--lifecycle lens. Specifically, we organize representative systems, benchmarks, and security studies with a tri-layer architecture of \emph{Perception}, \emph{Decision}, and \emph{Execution}, then connect that backbone to a four-stage lifecycle of \emph{Creation}, \emph{Deployment}, \emph{Operation}, and \emph{Maintenance}. This framework clarifies where capability bottlenecks are formed, where failures first surface, and where controls can be attached. Using it, we map major threats--including prompt injection, interface deception, over-privilege, memory poisoning, and supply-chain compromise--to lifecycle failure points and derive governance requirements centered on constrained action interfaces, provenance, sandboxing, runtime oversight, and continuous evaluation. CUAs should therefore be understood as lifecycle-dependent interactive systems whose reliability depends jointly on architectural design and operational control.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -51,6 +55,7 @@ computer-use agents, multimodal systems, safety and security, governance
 \input{sections/05_security}
 \input{sections/06_discussion}
 \input{sections/07_limitations}
+\input{sections/08_conclusion}
 
 \bibliographystyle{IEEEtran}
 \bibliography{references/cua_refs}
